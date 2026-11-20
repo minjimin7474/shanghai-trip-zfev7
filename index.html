@@ -128,6 +128,14 @@ input,select,textarea{font:inherit;color:var(--text)}
 .nowline{display:flex;align-items:center;gap:8px;color:var(--now);font-size:12px;font-weight:700;margin:4px 0}
 .nowline::after{content:"";flex:1;height:1.5px;background:var(--now);border-radius:2px}
 .empty{text-align:center;color:var(--sub);padding:40px 0}
+.memo-intro{margin:10px 2px 0}
+.compose textarea{width:100%;border:0;background:var(--soft);border-radius:12px;padding:10px 12px;resize:vertical;min-height:76px}
+.memo-card{padding:14px 16px}
+.memo-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.memo-text{font-size:14px;color:var(--text)}
+.mcm{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.mcm-list{margin-bottom:4px}
+.linkbtn{border:0;background:none;padding:2px 0;font-size:12.5px;font-weight:600;color:var(--sub)}
 .addbtn{width:100%;border:1.5px dashed #ecd5dc;background:none;border-radius:16px;padding:12px;color:var(--sub);font-size:14px;margin:4px 0 20px}
 
 /* 아래에서 올라오는 창 */
@@ -266,8 +274,9 @@ function dday() {
   if (today <= b) return '여행 ' + (today - a + 1) + '일차';
   return '다녀왔어요';
 }
-function opinionLines(it) {
-  return (it.opinion || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+function opinionLines(it) { return parseLines(it.opinion); }
+function parseLines(str) { // "이름: 내용" 줄 목록 → [{name, text}]
+  return (str || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
     const m = /^([^:：]{1,8})[:：]\s*(.*)$/.exec(l);
     return m ? { name: m[1].trim(), text: m[2] } : { name: '', text: l };
   });
@@ -354,17 +363,18 @@ function render() {
   const me = S.me ? `${dotOf(S.me)}${esc(S.me)}` : '나는?';
   document.getElementById('app').innerHTML = `
     <header class="top"><div class="wrap">
-      <h1>${S.tab === 'overview' ? '여행 개요' : '일정'}</h1>
+      <h1>${{ overview: '여행 개요', schedule: '일정', memo: '메모' }[S.tab] || '여행 개요'}</h1>
       <button class="iconbtn" onclick="openPrint()" title="PDF로 저장" aria-label="PDF로 저장"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></button>
       <button class="iconbtn" onclick="load()" title="새로고침" aria-label="새로고침"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
       <button class="me" onclick="askMe()">${me}</button>
     </div></header>
     ${S.busy ? '<div class="busy">시트와 맞추는 중…</div>' : ''}
-    ${S.offline ? `<div class="wrap"><div class="offline">📴 구글에 연결되지 않아 <b>${esc(new Date(S.data.fetchedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</b>에 저장된 일정을 보여 주고 있어요. 고치기·의견은 연결되면 할 수 있어요.</div></div>` : ''}
-    <main class="wrap">${S.tab === 'overview' ? renderOverview(S.data.overview) : renderSchedule()}</main>
+    ${S.offline ? `<div class="wrap"><div class="offline">📴 구글에 연결되지 않아 <b>${esc(new Date(S.data.fetchedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</b>에 저장된 일정을 보여 주고 있어요. 고치기·의견·메모는 연결되면 할 수 있어요.</div></div>` : ''}
+    <main class="wrap">${S.tab === 'schedule' ? renderSchedule() : S.tab === 'memo' ? renderMemos() : renderOverview(S.data.overview)}</main>
     <nav class="nav"><div class="wrap">
       <button aria-current="${S.tab === 'overview'}" onclick="setTab('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>개요</button>
       <button aria-current="${S.tab === 'schedule'}" onclick="setTab('schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>일정</button>
+      <button aria-current="${S.tab === 'memo'}" onclick="setTab('memo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8.5 12.5h7M8.5 16h5"/></svg>메모</button>
     </div></nav>`;
   const nx = document.querySelector('.item.next');
   if (S.scrollToNow && nx) { nx.scrollIntoView({ block: 'center' }); S.scrollToNow = false; }
@@ -587,8 +597,92 @@ function renderPrint() {
         <div style="margin-top:6px"><b>🚕 기사님께</b> 师傅，请送我到这个地址：${esc(zh)}</div>
       </div>
       ${days}
+      ${(S.data.memos || []).length ? `<h2>📝 메모</h2><table>${sortedMemos().map(m => `<tr><td><b>${esc(m.name || '')}</b> <span style="color:#7d7177">${esc(memoTime(m))}</span><div class="mm">${esc(m.text)}</div>${parseLines(m.comments).map(c => `<div class="mm">└ ${esc(c.name ? c.name + ': ' : '')}${esc(c.text)}</div>`).join('')}</td></tr>`).join('')}</table>` : ''}
     </div>
   </div>`;
+}
+
+/* ───────── 자유 메모 ───────── */
+function memoMs(m) { const n = parseInt(String(m.id).slice(1, 14), 10); return isNaN(n) ? 0 : n; }
+function sortedMemos() { return (S.data.memos || []).slice().sort((a, b) => memoMs(b) - memoMs(a)); }
+function memoTime(m) {
+  const ms = memoMs(m);
+  if (!ms) return m.at || '';
+  const d = new Date(ms);
+  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+function renderMemos() {
+  const list = sortedMemos();
+  return `
+    <div class="memo-intro small muted">준비물, 아이디어, 링크… 무엇이든 자유롭게 남겨요. 모두에게 보여요.</div>
+    <form class="card compose" onsubmit="return sendMemo(event)">
+      <textarea name="t" rows="3" maxlength="2000" placeholder="${S.me ? esc(S.me) + '(으)로 메모 남기기' : '메모 남기기'}"></textarea>
+      <div class="btns" style="margin-top:8px;justify-content:flex-end"><button class="btn primary" type="submit">등록</button></div>
+    </form>
+    ${list.length ? list.map(m => `
+      <article class="card memo-card">
+        <div class="memo-head">
+          ${m.name ? `<span class="who">${dotOf(m.name)}${esc(m.name)}</span>` : ''}
+          <span class="small muted">${esc(memoTime(m))}${m.editedAt ? ' · 수정됨' : ''}</span>
+          <span style="flex:1"></span>
+          <button class="edit" onclick="editMemo('${esc(m.id)}')" aria-label="메모 고치기">✏️</button>
+        </div>
+        <div class="pre memo-text">${linkify(m.text)}</div>
+        ${memoComments(m)}
+      </article>`).join('') : '<div class="empty">아직 메모가 없어요</div>'}
+    <div style="height:8px"></div>`;
+}
+function memoComments(m) {
+  const cs = parseLines(m.comments), open = S.openMemo === m.id;
+  const shown = open ? cs : cs.slice(-2); // 접혀 있으면 최근 2개만
+  const line = c => `<div class="op">${c.name ? `<b>${dotOf(c.name)}${esc(c.name)}</b>` : ''}<span>${linkify(c.text)}</span></div>`;
+  return `<div class="mcm">
+    ${shown.length ? `<div class="mcm-list">${shown.map(line).join('')}</div>` : ''}
+    ${open ? `<form class="opform" onsubmit="return sendMemoComment(event, '${esc(m.id)}')">
+        <input name="t" placeholder="${S.me ? esc(S.me) + '(으)로 댓글 달기' : '댓글 달기'}" maxlength="300" autocomplete="off">
+        <button class="btn" type="submit">등록</button></form>`
+      : `<button class="linkbtn" onclick="toggleMemo('${esc(m.id)}')">💬 ${cs.length > 2 ? `댓글 ${cs.length}개 모두 보기 · 달기` : cs.length ? '댓글 달기' : '댓글'}</button>`}
+  </div>`;
+}
+function toggleMemo(id) {
+  S.openMemo = S.openMemo === id ? null : id; render();
+  const f = document.querySelector('.memo-card .opform input'); if (f && !('ontouchstart' in window)) f.focus();
+}
+function sendMemoComment(e, id) {
+  e.preventDefault();
+  const t = e.target.t.value.trim(); if (!t) return false;
+  if (!S.me) { askMe(); return false; }
+  write('addMemoComment', { id: id, name: S.me, text: t }, '댓글을 남겼어요');
+  return false;
+}
+function sendMemo(e) {
+  e.preventDefault();
+  const t = e.target.t.value.trim(); if (!t) return false;
+  if (!S.me) { askMe(); return false; }
+  write('addMemo', { name: S.me, text: t }, '메모를 남겼어요');
+  return false;
+}
+function editMemo(id) {
+  const m = (S.data.memos || []).find(x => x.id === id); if (!m) return;
+  S.editMemo = m;
+  openSheet(`<h3>메모 고치기</h3>
+    <form onsubmit="return saveMemo(event)">
+      <label class="fld"><textarea name="t" rows="6" maxlength="2000">${esc(m.text)}</textarea></label>
+      <div class="btns"><button type="button" class="btn danger" onclick="delMemo()">삭제</button><span class="sp"></span>
+        <button type="button" class="btn" onclick="closeSheet()">취소</button><button class="btn primary">저장</button></div>
+    </form>`);
+}
+function saveMemo(e) {
+  e.preventDefault();
+  const m = S.editMemo, t = e.target.t.value.trim();
+  if (!t || t === m.text) { closeSheet(); return false; }
+  write('updateMemo', { id: m.id, orig: m.text, text: t }, '고쳤어요');
+  return false;
+}
+function delMemo() {
+  const m = S.editMemo;
+  if (!confirm('이 메모를 지울까요? 시트에서도 지워져요.')) return;
+  write('deleteMemo', { id: m.id }, '지웠어요');
 }
 
 /* ───────── 아래에서 올라오는 창 ───────── */
