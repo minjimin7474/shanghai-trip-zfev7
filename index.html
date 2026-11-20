@@ -1,21 +1,713 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#fcf5f6">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="상하이 여행">
+<link rel="apple-touch-icon" href="hero.webp">
+<base target="_blank">
+<meta charset="utf-8">
 <title>상하이 여행</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
-  html, body { margin: 0; height: 100%; background: #fcf5f6; }
-  iframe { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+/* 플랫·심플: 연한 핑크 바탕 · 흰 카드 · 테두리 없이 옅은 그림자 · 포인트 핑크 하나 */
+:root{
+  color-scheme:light;
+  --bg:#fcf5f6; --card:#ffffff; --ink:#2b2226; --text:#3b3236; --sub:#9a8e93; --line:#f2e7ea; --soft:#faf2f4;
+  --accent:#ef6d93; --accent-d:#de5a80; --accent-bg:#fde9ef;
+  --c-minji:#6aa8dc; --c-yuna:#f08fae; --c-soram:#f2c04d; --c-dk:#78c495;
+  --now:#ef6d93; --shadow:0 2px 14px rgba(160,90,110,.07);
+  --font:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font:15px/1.55 var(--font);-webkit-font-smoothing:antialiased;letter-spacing:-.01em;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:var(--text)}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+.muted{color:var(--sub)}
+.pre{white-space:pre-wrap;word-break:break-word}
+
+/* 상단 */
+.top{position:sticky;top:0;z-index:20;background:rgba(252,245,246,.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.top .wrap{display:flex;align-items:center;gap:6px;height:56px}
+.top h1{font-size:20px;font-weight:700;color:var(--ink);margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iconbtn{border:0;background:var(--card);width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:15px;color:var(--accent);box-shadow:var(--shadow)}
+.me{border:0;background:var(--card);border-radius:999px;padding:6px 12px 6px 9px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:var(--shadow)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+
+/* 하단 탭 */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.nav .wrap{display:flex}
+.nav button{flex:1;border:0;background:none;padding:9px 0 10px;font-size:11.5px;font-weight:600;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:3px}
+.nav button svg{width:22px;height:22px}
+.nav button[aria-current=true]{color:var(--accent)}
+
+/* 카드 */
+.card{background:var(--card);border-radius:20px;padding:18px 16px;margin:12px 0;box-shadow:var(--shadow)}
+.card h2{font-size:15px;font-weight:700;color:var(--ink);margin:0 0 12px;display:flex;align-items:center;gap:6px}
+.card h2 .sp{flex:1}
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#ffeef3,#fde3eb);padding:20px 18px;min-height:150px;box-shadow:none}
+.hero .art{position:absolute;right:-18px;bottom:-14px;width:62%;max-width:280px;opacity:.38;pointer-events:none;user-select:none}
+.hero .txt{position:relative}
+.hero .dday{display:inline-block;font-size:12px;font-weight:700;color:var(--accent);background:rgba(255,255,255,.85);padding:3px 10px;border-radius:999px}
+.hero .t{font-size:24px;font-weight:700;color:var(--ink);margin:10px 0 2px;letter-spacing:-.02em}
+.hero .d{color:#8a7a80;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;padding:4px 10px 4px 8px;border-radius:999px;background:rgba(255,255,255,.8)}
+.row{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0;padding-top:0}
+.row .k{width:78px;flex:none;color:var(--sub);font-size:13px;padding-top:1px}
+.row .v{flex:1;min-width:0}
+.edit{border:0;background:none;color:var(--sub);font-size:12px;padding:2px 4px;border-radius:8px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.btn{border:0;background:var(--soft);border-radius:12px;padding:9px 14px;font-size:13.5px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;color:var(--text)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.danger{color:#d64545}
+.zh{font-size:16px;font-weight:700;line-height:1.5;color:var(--ink)}
+.flight{padding:14px 0;border-top:1px solid var(--line)}
+.flight:first-of-type{border-top:0;padding-top:0}
+.flight .top2{display:flex;align-items:center;gap:8px}
+.flight .date{font-size:14px;font-weight:700;color:var(--ink)}
+.flight .code{font-size:12.5px;color:var(--sub)}
+.route{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:10px 0 8px;background:var(--soft);border-radius:14px;padding:10px 14px}
+.route .ap{font-size:12.5px;color:var(--sub)}
+.route .ap b{display:block;font-size:20px;font-weight:700;color:var(--ink);line-height:1.25}
+.route .arrow{color:var(--accent);font-size:15px}
+.route .ap:last-child{text-align:right}
+.small{font-size:13px}
+.tel{display:inline-block;margin:2px 4px 2px 0;padding:0 8px;border-radius:999px;background:var(--accent-bg);color:var(--accent-d);text-decoration:none;font-weight:600}
+
+/* 일정 */
+.days{display:flex;gap:8px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
+.days::-webkit-scrollbar{display:none}
+.day{flex:1;min-width:66px;border:0;background:var(--card);border-radius:16px;padding:8px 4px;text-align:center;box-shadow:var(--shadow)}
+.day b{display:block;font-size:18px;font-weight:700;line-height:1.25;color:var(--ink)}
+.day span{font-size:11.5px;color:var(--sub)}
+.day[aria-current=true]{background:var(--accent)}
+.day[aria-current=true] b,.day[aria-current=true] span{color:#fff}
+.day .today{display:block;font-size:10px;font-weight:700;color:var(--accent)}
+.day[aria-current=true] .today{color:#fff}
+.daysum{margin:14px 2px 2px;font-size:13px;color:var(--sub)}
+.daysum div:first-child{font-size:16px;font-weight:700;color:var(--ink)}
+.filter{display:flex;gap:6px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
+.filter::-webkit-scrollbar{display:none}
+.fbtn{flex:none;border:0;background:var(--card);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;box-shadow:var(--shadow)}
+.fbtn[aria-pressed=true]{background:var(--ink);color:#fff}
+
+.tl{margin:6px 0 16px}
+.slot{display:grid;grid-template-columns:44px 1fr;gap:8px;margin:8px 0}
+.slot .tm{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--sub);padding-top:15px;text-align:right}
+.stack{display:flex;flex-direction:column;gap:8px;min-width:0}
+.split{display:grid;align-items:start;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px}
+.item{background:var(--card);border-radius:16px;box-shadow:var(--shadow);min-width:0;border:1.5px solid transparent}
+.item.past{opacity:.5}
+.item.next{border-color:var(--accent)}
+.item .head{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:0;background:none;padding:13px 14px}
+.item .ic{font-size:17px;line-height:1.35;flex:none}
+.item .ttl{flex:1;min-width:0;font-weight:600;line-height:1.45;color:var(--ink)}
+.item .meta{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;font-weight:400}
+.who{font-size:11.5px;font-weight:500;padding:1px 8px;border-radius:999px;background:var(--soft);color:var(--text);display:inline-flex;align-items:center;gap:4px}
+.who .dot{width:7px;height:7px}
+.peek{margin-top:7px;display:flex;flex-direction:column;gap:2px}
+.peek div{font-size:12.5px;font-weight:400;color:#6f6368;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.peek b{font-weight:600;color:var(--text);margin-right:4px}
+.peek .more{color:var(--sub);font-size:11.5px}
+.item .body{padding:0 14px 14px}
+.map{width:100%;height:170px;border:0;border-radius:14px;background:var(--soft);display:block}
+.placeline{font-size:12.5px;color:var(--sub);margin:8px 0 0}
+.memo{margin:10px 0 0;font-size:13.5px;background:var(--soft);border-radius:12px;padding:10px 12px}
+.ops{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.op{font-size:13.5px;padding:3px 0;display:flex;gap:6px;align-items:baseline}
+.op b{font-weight:600;flex:none;display:inline-flex;align-items:center;gap:4px}
+.opform{display:flex;gap:6px;margin-top:8px}
+.opform input{flex:1;min-width:0;border:0;background:var(--soft);border-radius:12px;padding:9px 12px}
+.nowline{display:flex;align-items:center;gap:8px;color:var(--now);font-size:12px;font-weight:700;margin:4px 0}
+.nowline::after{content:"";flex:1;height:1.5px;background:var(--now);border-radius:2px}
+.empty{text-align:center;color:var(--sub);padding:40px 0}
+.addbtn{width:100%;border:1.5px dashed #ecd5dc;background:none;border-radius:16px;padding:12px;color:var(--sub);font-size:14px;margin:4px 0 20px}
+
+/* 아래에서 올라오는 창 */
+.sheet-bg{position:fixed;inset:0;background:rgba(43,34,38,.35);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--card);width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:20px 16px calc(18px + env(safe-area-inset-bottom))}
+.sheet h3{margin:0 0 12px;font-size:18px;font-weight:700;color:var(--ink)}
+.fld{display:block;margin:0 0 12px}
+.fld span{display:block;font-size:12px;color:var(--sub);margin-bottom:4px}
+.fld input,.fld select,.fld textarea{width:100%;border:0;background:var(--soft);border-radius:12px;padding:10px 12px}
+.fld textarea{min-height:90px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet .btns{justify-content:flex-end}
+.sheet .btns .sp{flex:1}
+.pick{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.pick button{border:0;background:var(--soft);border-radius:14px;padding:14px;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}
+.pick .dot{width:11px;height:11px}
+
+.driver{position:fixed;inset:0;z-index:60;background:#fff;color:#000;display:flex;flex-direction:column;justify-content:center;padding:24px;text-align:center}
+.driver .big{font-size:30px;font-weight:800;line-height:1.4;word-break:break-all}
+.driver .req{font-size:22px;margin-top:20px}
+.driver .ko{font-size:14px;color:#555;margin-top:6px}
+.driver button{margin-top:32px;align-self:center;border:0;background:#f2f2f2;border-radius:12px;padding:10px 20px;color:#000}
+
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:rgba(43,34,38,.9);color:#fff;padding:9px 16px;border-radius:999px;font-size:13.5px;z-index:70;max-width:90vw;text-align:center}
+.loading{display:grid;place-items:center;min-height:60vh;color:var(--sub)}
+.spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.offline{margin:4px 0 0;background:#fff4e5;color:#8a5a14;border-radius:12px;padding:9px 12px;font-size:12.5px;line-height:1.5}
+.busy{position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:40;background:var(--card);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--sub);box-shadow:var(--shadow)}
+
+/* 인쇄용(PDF) 보기 */
+.pv{background:#fff;color:#2b2226;min-height:100vh}
+.pv-bar{position:sticky;top:0;background:var(--bg);padding:10px 16px;display:flex;gap:8px;align-items:center;z-index:5}
+.pv-bar .sp{flex:1}
+.pv-doc{max-width:760px;margin:0 auto;padding:20px 18px 40px;font-size:13px}
+.pv-doc h1{font-size:22px;font-weight:700;margin:0;color:var(--ink)}
+.pv-doc .pv-sub{color:#7d7177;margin:2px 0 14px}
+.pv-doc h2{font-size:16px;font-weight:700;margin:22px 0 6px;padding-bottom:4px;border-bottom:1.5px solid var(--accent);color:var(--ink)}
+.pv-doc .pv-lines{color:#7d7177;margin:0 0 6px}
+.pv-doc table{width:100%;border-collapse:collapse}
+.pv-doc td{vertical-align:top;padding:7px 6px;border-bottom:1px solid #eee3e6}
+.pv-doc td.t{width:48px;font-weight:700;white-space:nowrap}
+.pv-doc .ti{font-weight:700}
+.pv-doc .pl{margin-top:2px}
+.pv-doc .pl a{color:#1d5fa8}
+.pv-doc .mm{color:#5f5458;white-space:pre-wrap;margin-top:2px}
+.pv-doc .tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:999px;background:#f6ecef;margin-left:4px;font-weight:600}
+.pv-doc tr{break-inside:avoid;page-break-inside:avoid}
+.pv-box{border:1px solid #eee3e6;border-radius:12px;padding:10px 12px;margin:8px 0}
+@media print{
+  body{background:#fff;padding:0}
+  .noprint{display:none !important}
+  .pv-doc{padding:0;max-width:none}
+  .pv-doc h2{break-after:avoid;page-break-after:avoid}
+  @page{margin:14mm 12mm}
+}
 </style>
 </head>
 <body>
-<!-- 실제 화면은 구글 Apps Script 웹앱이고, 이 페이지는 그걸 화면 가득 보여 주기만 한다. -->
-<iframe src="https://script.google.com/macros/s/AKfycbzSOHdMub-USepYTJou5QxQUMBA0lMGXHPiMdUPH759_EAlUVRnyQc2rx6SFRKCC77z/exec"
-        title="상하이 여행" allow="clipboard-write; fullscreen"></iframe>
+<div id="app"><div class="loading"><div><div class="spin"></div>불러오는 중…</div></div></div>
+
+<script>
+const HERO_SRC = 'hero.webp';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzSOHdMub-USepYTJou5QxQUMBA0lMGXHPiMdUPH759_EAlUVRnyQc2rx6SFRKCC77z/exec'; // GitHub Pages 에서 쓸 Apps Script 웹앱 주소 (build_github.py 가 채움)
+
+/* ───────── 서버 호출 ───────── */
+function api(fn) {
+  const args = Array.prototype.slice.call(arguments, 1);
+  if (window.google && google.script && google.script.run) {
+    return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn].apply(null, args));
+  }
+  if (window.__mockApi) return window.__mockApi[fn].apply(null, args); // 로컬 미리보기용
+  // GitHub Pages: Apps Script 를 데이터 통로로 호출 (로그인 정보 없이 보냄 → 구글 계정 여러 개여도 문제없음)
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 15000); // 중국 등에서 구글이 막히면 15초 뒤 포기
+  const req = fn === 'getData'
+    ? fetch(API_URL + '?action=getData&t=' + Date.now(), { signal: ctrl.signal, credentials: 'omit' })
+    : fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: fn, payload: args[0] }), signal: ctrl.signal, credentials: 'omit' });
+  return req.then(r => r.json()).then(res => {
+    clearTimeout(timer);
+    if (!res.ok) throw new Error(res.error);
+    return res.data;
+  }, () => { clearTimeout(timer); throw new Error('NETWORK'); });
+}
+
+/* 마지막으로 불러온 데이터를 폰에 저장 (구글이 막혀도 일정은 보이게) */
+function saveCache(d) { try { localStorage.setItem('trip.cache', JSON.stringify(d)); } catch (e) { /* 저장 공간 부족 등은 무시 */ } }
+function readCache() { try { return JSON.parse(localStorage.getItem('trip.cache') || 'null'); } catch (e) { return null; } }
+
+/* ───────── 상태 ───────── */
+const S = { data: null, tab: 'overview', day: 0, filter: 'all', open: null, me: null, busy: false, print: false };
+const MEMBER_COLOR = { '민지': 'var(--c-minji)', '윤아': 'var(--c-yuna)', '소람': 'var(--c-soram)', '동경': 'var(--c-dk)' };
+const CAT_ICON = { '이동': '🚕', '식사': '🍽️', '체험·촬영': '📸', '숙소': '🏨', '관광': '🏮', '쇼핑': '🛍️', '간식·카페': '🥟', '바': '🍸', '디즈니': '🏰', '공항': '✈️' };
+
+function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+S.tab = store('trip.tab') || 'overview';
+S.me = store('trip.me');
+
+/* ───────── 도우미 ───────── */
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const linkify = s => esc(s).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" rel="noopener">$1</a>');
+const telify = s => esc(s).replace(/(\+?\d[\d-]{1,15}\d|\b\d{3}\b)/g, m => `<a class="tel" href="tel:${m.replace(/-/g, '')}" target="_top">${m}</a>`);
+
+function members() {
+  const sub = (S.data && S.data.overview.subtitle) || '';
+  return sub.split('·').map(x => x.trim()).filter(x => /^[가-힣]{2,4}$/.test(x));
+}
+function memberColor(name) { return MEMBER_COLOR[name] || 'var(--sub)'; }
+function dotOf(name) { return `<span class="dot" style="background:${memberColor(name)}"></span>`; }
+function namesIn(who) { return members().filter(m => (who || '').indexOf(m) >= 0); }
+
+// 중국 시간 기준 "지금"
+function chinaNow() {
+  const d = new Date(Date.now() + 8 * 3600 * 1000);
+  return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(), hm: String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0') };
+}
+function tripYear() { const m = /(\d{4})\.\d/.exec(S.data.overview.subtitle || S.data.overview.title || ''); return m ? +m[1] : new Date().getFullYear(); }
+function parseMD(s) { const m = /(\d{1,2})\s*[\/.]\s*(\d{1,2})/.exec(s || ''); return m ? { m: +m[1], d: +m[2] } : null; }
+function dayNum(y, m, d) { return Math.round(Date.UTC(y, m - 1, d) / 864e5); }
+function isToday(dateStr) { const p = parseMD(dateStr), n = chinaNow(); return !!p && p.m === n.m && p.d === n.d; }
+function normTime(t) { const m = /(\d{1,2}):(\d{2})/.exec(t || ''); return m ? m[1].padStart(2, '0') + ':' + m[2] : ''; }
+
+function dayList() {
+  const out = [];
+  (S.data.days || []).forEach(d => out.push({ date: d.date, lines: d.lines }));
+  S.data.items.forEach(it => { if (it.date && !out.some(d => d.date === it.date)) out.push({ date: it.date, lines: [] }); });
+  return out;
+}
+function dday() {
+  const days = dayList(); if (!days.length) return '';
+  const y = tripYear(), n = chinaNow(), today = dayNum(n.y, n.m, n.d);
+  const first = parseMD(days[0].date), last = parseMD(days[days.length - 1].date);
+  if (!first || !last) return '';
+  const a = dayNum(y, first.m, first.d), b = dayNum(last.m < first.m ? y + 1 : y, last.m, last.d);
+  if (today < a) return 'D-' + (a - today);
+  if (today <= b) return '여행 ' + (today - a + 1) + '일차';
+  return '다녀왔어요';
+}
+function opinionLines(it) {
+  return (it.opinion || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const m = /^([^:：]{1,8})[:：]\s*(.*)$/.exec(l);
+    return m ? { name: m[1].trim(), text: m[2] } : { name: '', text: l };
+  });
+}
+
+function mapQuery(it) {
+  const u = it.placeUrl || '';
+  const m = /[?&]keyword=([^&]+)/.exec(u);
+  if (m) { try { return decodeURIComponent(m[1]) + ' 上海'; } catch (e) { return m[1] + ' 上海'; } }
+  const q = /[?&]query=([^&]+)/.exec(u);
+  if (q) return decodeURIComponent(q[1].replace(/\+/g, ' '));
+  return (it.place || '').replace(/\(.*?\)/g, '').trim() + ' Shanghai';
+}
+function amapSearch(q) { return 'https://uri.amap.com/search?keyword=' + encodeURIComponent(q) + '&city=310000&view=map&callnative=1'; }
+function navUrl(it) { return it.placeUrl || (it.place ? amapSearch((it.place || '').replace(/\(.*?\)/g, '').trim()) : ''); }
+function navLabel(url) { return /amap\.com/.test(url) ? '📍 고덕지도로 열기' : /google\./.test(url) ? '📍 구글지도로 열기' : '📍 지도 열기'; }
+
+function toast(msg) {
+  if (!msg) return;
+  const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 2200);
+}
+function copyText(text) {
+  const done = () => toast('복사했어요');
+  const fallback = () => {
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { toast('복사가 안 돼요. 길게 눌러 복사해 주세요'); }
+    ta.remove();
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback); else fallback();
+}
+
+/* ───────── 데이터 불러오기·저장 ───────── */
+function gotData(d) {
+  S.data = d;
+  if (S.firstLoad === undefined) { S.firstLoad = true; pickInitialDay(); }
+}
+function load(quiet) {
+  if (!quiet) S.busy = true;
+  if (!S.data) { // 저장해 둔 일정이 있으면 먼저 보여 주고, 뒤에서 새로 불러오기
+    const c = readCache();
+    if (c) { gotData(c); render(); }
+  }
+  return api('getData').then(d => {
+    gotData(d); saveCache(d); S.offline = false; S.busy = false;
+    render();
+    if (!S.me) askMe();
+  }).catch(err => {
+    S.busy = false;
+    if (S.data) { // 연결 실패: 저장된 일정으로 계속 보기
+      const was = S.offline; S.offline = true; render();
+      if (!was) toast('구글에 연결되지 않아 저장된 일정을 보여 줘요');
+    } else {
+      showError(String(err && err.message) === 'NETWORK' ? '구글에 연결되지 않았어요. 중국에서는 한국 로밍이나 구글이 되는 eSIM으로 접속해 주세요.' : err);
+    }
+  });
+}
+function pickInitialDay() {
+  const days = dayList(); const i = days.findIndex(d => isToday(d.date));
+  if (i >= 0) { S.day = i; S.tab = 'schedule'; }
+}
+function write(fn, payload, okMsg) {
+  if (S.offline) { toast('지금은 구글에 연결되지 않아 저장할 수 없어요'); return Promise.resolve(); }
+  S.busy = true; render();
+  return api(fn, payload).then(d => {
+    gotData(d); saveCache(d); S.busy = false; closeSheet(); render(); toast(okMsg);
+  }).catch(err => {
+    S.busy = false;
+    if (String(err && err.message) === 'NETWORK') { render(); toast('연결이 안 돼서 저장하지 못했어요. 잠시 뒤 다시 해 주세요'); return; }
+    if (String(err && err.message || err).indexOf('CONFLICT') >= 0) {
+      closeSheet(); toast('그새 다른 사람이 고쳤어요. 새로 불러올게요'); load(true);
+    } else { render(); toast('저장하지 못했어요: ' + (err && err.message || err)); }
+  });
+}
+function showError(err) {
+  document.getElementById('app').innerHTML = `<div class="wrap"><div class="card"><h2>불러오지 못했어요</h2><div class="pre small">${esc(err && err.message || err)}</div><div class="btns"><button class="btn primary" onclick="load()">다시 시도</button></div></div></div>`;
+}
+
+/* ───────── 화면 ───────── */
+function render() {
+  if (!S.data) return;
+  if (S.print) { document.getElementById('app').innerHTML = renderPrint(); return; }
+  const me = S.me ? `${dotOf(S.me)}${esc(S.me)}` : '나는?';
+  document.getElementById('app').innerHTML = `
+    <header class="top"><div class="wrap">
+      <h1>${S.tab === 'overview' ? '여행 개요' : '일정'}</h1>
+      <button class="iconbtn" onclick="openPrint()" title="PDF로 저장" aria-label="PDF로 저장"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></button>
+      <button class="iconbtn" onclick="load()" title="새로고침" aria-label="새로고침"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+      <button class="me" onclick="askMe()">${me}</button>
+    </div></header>
+    ${S.busy ? '<div class="busy">시트와 맞추는 중…</div>' : ''}
+    ${S.offline ? `<div class="wrap"><div class="offline">📴 구글에 연결되지 않아 <b>${esc(new Date(S.data.fetchedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</b>에 저장된 일정을 보여 주고 있어요. 고치기·의견은 연결되면 할 수 있어요.</div></div>` : ''}
+    <main class="wrap">${S.tab === 'overview' ? renderOverview(S.data.overview) : renderSchedule()}</main>
+    <nav class="nav"><div class="wrap">
+      <button aria-current="${S.tab === 'overview'}" onclick="setTab('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>개요</button>
+      <button aria-current="${S.tab === 'schedule'}" onclick="setTab('schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>일정</button>
+    </div></nav>`;
+  const nx = document.querySelector('.item.next');
+  if (S.scrollToNow && nx) { nx.scrollIntoView({ block: 'center' }); S.scrollToNow = false; }
+}
+function setTab(t) { S.tab = t; store('trip.tab', t); S.scrollToNow = t === 'schedule'; render(); window.scrollTo(0, 0); }
+
+function infoBy(label) { return S.data.overview.info.find(r => r.label.indexOf(label) >= 0); }
+function tripTitle(o) { return (o.title || '').replace(/_v\d+$/, '').replace(/일정$/, '').trim() || '여행'; }
+function tripDates(o) { return (o.subtitle || '').split('·').slice(0, 2).map(s => s.trim()).filter(Boolean).join(' · '); }
+
+function renderOverview(o) {
+  const chips = members().map(m => `<span class="chip">${dotOf(m)}${esc(m)}</span>`).join('');
+  const addr = infoBy('숙소 주소'), loc = infoBy('숙소 위치'), chk = infoBy('체크인');
+  const addrLines = addr ? addr.value.split('\n') : [];
+  const zh = addrLines[0] || '', en = addrLines.slice(1).join(' ');
+  const hotel = addr ? `
+    <section class="card"><h2>🏨 숙소<span class="sp"></span>${editBtn(addr)}</h2>
+      <div class="zh">${esc(zh)}</div>
+      ${en ? `<div class="small muted" style="margin-top:4px">${esc(en)}</div>` : ''}
+      ${loc ? `<div class="row" style="margin-top:12px;border-top:2px dotted var(--line);padding-top:10px"><div class="k">${esc(loc.label)}</div><div class="v small">${esc(loc.value)} ${editBtn(loc)}</div></div>` : ''}
+      ${chk ? `<div class="row"><div class="k">${esc(chk.label)}</div><div class="v small">${esc(chk.value)} ${editBtn(chk)}</div></div>` : ''}
+      <div class="btns">
+        <button class="btn primary" onclick="showDriver()">🚕 기사님께 보여주기</button>
+        <button class="btn" onclick="copyText(${esc(JSON.stringify(zh))})">주소 복사</button>
+        <a class="btn" href="${esc(amapSearch(zh.replace(/^上海市/, '')))}" rel="noopener">📍 고덕지도</a>
+      </div>
+    </section>` : '';
+
+  const flights = o.flights.length ? `
+    <section class="card"><h2>✈️ 항공편</h2>
+      ${o.flights.map((f, fi) => {
+        const c = f.cells; const leg = (c[1] || '').split('\n');
+        const ap = s => { const m = /^(\d{1,2}:\d{2})\s*(.*)$/.exec((s || '').trim()); return m ? `<b>${esc(m[1])}</b>${esc(m[2])}` : esc(s); };
+        const who = (c[4] || '').split('·').map(x => x.trim()).filter(Boolean);
+        const sub = (c[2] || '').split('\n');
+        return `<div class="flight">
+          <div class="top2"><span class="date">${esc(c[0])}</span><span class="code">${esc(sub[0])}</span><span style="flex:1"></span><button class="edit" onclick="editFlight(${fi})" aria-label="항공편 고치기">✏️</button></div>
+          ${leg.length > 1 ? `<div class="route"><div class="ap">${ap(leg[0])}</div><div class="arrow">✈︎</div><div class="ap">${ap(leg[1])}</div></div>` : `<div class="small">${esc(c[1])}</div>`}
+          ${sub[1] ? `<div class="small muted">${esc(sub.slice(1).join(' · '))}</div>` : ''}
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${who.map(w => `<span class="who">${dotOf(w)}${esc(w)}</span>`).join('')}</div>
+          ${c[3] ? `<div class="small muted pre" style="margin-top:6px">🧳 ${esc(c[3])}</div>` : ''}
+          ${c[5] ? `<div class="small pre" style="margin-top:4px">${esc(c[5])}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </section>` : '';
+
+  const used = [addr, loc, chk].filter(Boolean).map(r => r.row);
+  const rest = o.info.filter(r => used.indexOf(r.row) < 0);
+  const restHtml = rest.length ? `<section class="card"><h2>💡 알아 둘 것</h2>
+      ${rest.map(r => `<div class="row"><div class="k">${esc(r.label)}</div><div class="v small"><span class="pre">${/긴급/.test(r.label) ? telify(r.value) : esc(r.value)}</span>
+        ${r.links.map(l => ` <a href="${esc(l.url)}" rel="noopener">🔗 ${esc(l.text)}</a>`).join('')} ${editBtn(r)}</div></div>`).join('')}
+    </section>` : '';
+
+  return `
+    <section class="card hero">
+      ${HERO_SRC && HERO_SRC.indexOf('__') !== 0 ? `<img class="art" src="${HERO_SRC}" alt="">` : ''}
+      <div class="txt">
+        <span class="dday">${esc(dday())}</span>
+        <div class="t">${esc(tripTitle(o))}</div>
+        <div class="d">${esc(tripDates(o))}</div>
+        <div class="chips">${chips}</div>
+      </div>
+    </section>
+    ${hotel}${flights}${restHtml}
+    <section class="card" style="text-align:center">
+      <div class="small muted">구글이 막히는 회선에 대비해 출발 전에 저장해 두세요</div>
+      <div class="btns" style="justify-content:center;margin-top:10px"><button class="btn primary" onclick="openPrint()">📄 일정 PDF로 저장</button></div>
+    </section>
+    <p class="small muted" style="text-align:center;margin:18px 0">'안내' 탭과 연결돼 있어요 · ${esc(new Date(S.data.fetchedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }))} 기준</p>`;
+}
+function editBtn(r) { return r.editable ? `<button class="edit" onclick="editInfo(${r.row})" aria-label="${esc(r.label)} 고치기">✏️</button>` : ''; }
+
+function itemVisible(it) {
+  if (S.filter === 'all') return true;
+  const names = namesIn(it.who);
+  return names.length === 0 || names.indexOf(S.filter) >= 0; // '전원', '3명' 같은 표기는 모두에게 보임
+}
+
+function renderSchedule() {
+  const days = dayList();
+  if (!days.length) return '<div class="empty">아직 일정이 없어요</div>';
+  if (S.day >= days.length) S.day = 0;
+  const day = days[S.day];
+  const tabs = days.map((d, i) => {
+    const p = parseMD(d.date); const wd = (/\((.)\)/.exec(d.date) || [])[1] || '';
+    return `<button class="day" aria-current="${i === S.day}" onclick="S.day=${i};S.open=null;render()">${isToday(d.date) ? '<span class="today">오늘</span>' : ''}<b>${p ? p.d : esc(d.date)}</b><span>${p ? p.m + '월 ' : ''}${esc(wd)}</span></button>`;
+  }).join('');
+  const filt = ['all'].concat(members()).map(m => `<button class="fbtn" aria-pressed="${S.filter === m}" style="--fc:${m === 'all' ? 'var(--ink)' : memberColor(m)}" onclick="S.filter='${m}';render()">${m === 'all' ? '전체' : `${dotOf(m)}${esc(m)}`}</button>`).join('');
+
+  // 같은 시간에 여럿이면 나란히
+  const items = S.data.items.filter(it => it.date === day.date && itemVisible(it));
+  const slots = [];
+  let lastT = '';
+  items.forEach(it => {
+    const t = normTime(it.time);
+    const s = slots[slots.length - 1];
+    if (t && s && s.t === t) s.items.push(it);
+    else slots.push({ t: t, label: it.time || '', items: [it], sortT: t || lastT });
+    if (t) lastT = t;
+  });
+
+  const today = isToday(day.date), now = chinaNow().hm;
+  let nextMarked = false, nowDrawn = false;
+  const html = slots.map(s => {
+    let pre = '';
+    if (today && !nowDrawn && s.sortT && s.sortT > now) { pre = `<div class="nowline">지금 ${now}</div>`; nowDrawn = true; }
+    const cards = s.items.map(it => {
+      let cls = '';
+      if (today) {
+        if (s.sortT && s.sortT <= now) cls = 'past';
+        else if (!nextMarked) { cls = 'next'; nextMarked = true; }
+      }
+      return renderItem(it, cls);
+    }).join('');
+    const side = s.items.length > 1 && !s.items.some(i => i.row === S.open);
+    return pre + `<div class="slot"><div class="tm">${esc(s.label || '·')}</div>${side ? `<div class="split" style="--n:${s.items.length}">${cards}</div>` : `<div class="stack">${cards}</div>`}</div>`;
+  }).join('');
+
+  return `
+    <div class="days">${tabs}</div>
+    ${day.lines.length ? `<div class="daysum">${day.lines.map(l => `<div>${esc(l)}</div>`).join('')}</div>` : ''}
+    <div class="filter">${filt}</div>
+    <div class="tl">${html || '<div class="empty">이 날 일정이 없어요</div>'}${today && !nowDrawn && html ? `<div class="nowline">지금 ${now}</div>` : ''}</div>
+    <button class="addbtn" onclick="editItem(null)">＋ ${esc(day.date)} 일정 추가</button>`;
+}
+
+function renderItem(it, cls) {
+  const open = S.open === it.row;
+  const names = namesIn(it.who);
+  const who = it.who && it.who !== '전원' ? `<span class="meta"><span class="who">${names.map(dotOf).join('')}${esc(it.who)}</span></span>` : '';
+  const lines = opinionLines(it);
+  let peek = '';
+  if (!open && lines.length) { // 접힌 카드엔 최근 의견 2줄만
+    const last = lines.slice(-2);
+    peek = `<span class="peek">${last.map(o => `<div>${o.name ? `<b>${dotOf(o.name)} ${esc(o.name)}</b>` : ''}${esc(o.text)}</div>`).join('')}${lines.length > 2 ? `<span class="more">의견 ${lines.length - 2}개 더</span>` : ''}</span>`;
+  }
+  const head = `<button class="head" onclick="toggle(${it.row})" aria-expanded="${open}">
+      <span class="ic">${CAT_ICON[it.cat] || '📌'}</span>
+      <span class="ttl">${esc(it.title)}${who}${peek}</span>
+    </button>`;
+  if (!open) return `<article class="item ${cls}">${head}</article>`;
+
+  const nav = navUrl(it);
+  const ops = lines.map(o => `<div class="op">${o.name ? `<b>${dotOf(o.name)}${esc(o.name)}</b>` : ''}<span>${linkify(o.text)}</span></div>`).join('');
+  return `<article class="item ${cls}">${head}
+    <div class="body">
+      ${it.place ? `<iframe class="map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q=${encodeURIComponent(mapQuery(it))}&z=15&output=embed" title="${esc(it.place)} 지도"></iframe>
+        <div class="placeline">📍 ${esc(it.place)}</div>` : ''}
+      <div class="btns" style="margin-top:10px">
+        ${nav ? `<a class="btn primary" href="${esc(nav)}" rel="noopener">${navLabel(nav)}</a>` : ''}
+        ${it.sourceUrl ? `<a class="btn" href="${esc(it.sourceUrl)}" rel="noopener">🔗 출처</a>` : ''}
+      </div>
+      ${it.memo ? `<div class="memo pre">${linkify(it.memo)}</div>` : ''}
+      ${it.owner ? `<div class="small muted" style="margin-top:8px">담당 · ${esc(it.owner)}</div>` : ''}
+      <div class="ops">
+        ${ops || '<div class="small muted">아직 의견이 없어요</div>'}
+        <form class="opform" onsubmit="return sendOpinion(event, ${it.row})">
+          <input name="t" placeholder="${S.me ? esc(S.me) + '(으)로 의견 남기기' : '의견 남기기'}" maxlength="300" autocomplete="off">
+          <button class="btn" type="submit">등록</button>
+        </form>
+      </div>
+      <div class="btns"><span style="flex:1"></span><button class="btn" onclick="editItem(${it.row})">✏️ 수정</button></div>
+    </div>
+  </article>`;
+}
+function toggle(row) { S.open = S.open === row ? null : row; render(); }
+function findItem(row) { return S.data.items.find(i => i.row === row); }
+function origOf(it) { return { date: it.date, time: it.time, title: it.title }; }
+
+function sendOpinion(e, row) {
+  e.preventDefault();
+  const t = e.target.t.value.trim(); if (!t) return false;
+  if (!S.me) { askMe(); return false; }
+  const it = findItem(row);
+  write('addOpinion', { row: row, orig: origOf(it), name: S.me, text: t }, '의견을 남겼어요');
+  return false;
+}
+
+/* ───────── PDF(인쇄용 보기) ───────── */
+function openPrint() { S.print = true; closeSheet(); render(); window.scrollTo(0, 0); }
+function closePrint() { S.print = false; render(); }
+function doPrint() {
+  try { window.print(); } catch (e) { toast('인쇄 창을 열 수 없어요. 브라우저 메뉴의 인쇄를 써 주세요'); }
+}
+function renderPrint() {
+  const o = S.data.overview;
+  const addr = infoBy('숙소 주소'), chk = infoBy('체크인');
+  const zh = addr ? addr.value.split('\n')[0] : '';
+  const flights = o.flights.map(f => {
+    const c = f.cells;
+    const parts = [(c[1] || '').replace(/\n/g, ' → '), (c[2] || '').split('\n')[0], c[4]].filter(Boolean);
+    return `<div>• <b>${esc(c[0])}</b> ${esc(parts.join(' · '))}</div>`;
+  }).join('');
+  const rest = o.info.filter(r => /시차|긴급/.test(r.label)).map(r => `<div><b>${esc(r.label)}</b> ${esc(r.value)}</div>`).join('');
+  const days = dayList().map(d => {
+    const rows = S.data.items.filter(it => it.date === d.date).map(it => {
+      const nav = navUrl(it);
+      return `<tr><td class="t">${esc(it.time || '·')}</td><td>
+        <span class="ti">${CAT_ICON[it.cat] || '📌'} ${esc(it.title)}</span>${it.who && it.who !== '전원' ? `<span class="tag">${esc(it.who)}</span>` : ''}
+        ${it.place ? `<div class="pl">📍 ${nav ? `<a href="${esc(nav)}">${esc(it.place)}</a>` : esc(it.place)}</div>` : ''}
+        ${it.memo ? `<div class="mm">${esc(it.memo)}</div>` : ''}
+        ${it.sourceUrl ? `<div class="pl"><a href="${esc(it.sourceUrl)}">🔗 출처</a></div>` : ''}
+      </td></tr>`;
+    }).join('');
+    return `<h2>${esc(d.date)}</h2>${d.lines.length ? `<div class="pv-lines">${esc(d.lines.join(' · '))}</div>` : ''}<table>${rows}</table>`;
+  }).join('');
+  return `<div class="pv">
+    <div class="noprint">
+      <div class="pv-bar"><button class="btn" onclick="closePrint()">← 돌아가기</button><span class="sp"></span><button class="btn primary" onclick="doPrint()">📄 PDF로 저장</button></div>
+      <div class="hint" style="font-size:12.5px;color:var(--sub);padding:0 16px 10px;background:var(--bg);border-bottom:2px solid var(--line)">인쇄 창에서 대상(프린터)을 <b>'PDF로 저장'</b>으로 고르세요. 파란 글씨 장소를 누르면 PDF에서도 고덕지도가 열려요.</div>
+    </div>
+    <div class="pv-doc">
+      <h1>${esc(tripTitle(o))}</h1>
+      <div class="pv-sub">${esc(tripDates(o))} · ${esc(members().join(' · '))} · ${esc(new Date(S.data.fetchedAt).toLocaleString('ko-KR'))} 기준</div>
+      <div class="pv-box">
+        <div><b>🏨 숙소</b> ${esc(zh)} ${zh ? `<a href="${esc(amapSearch(zh.replace(/^上海市/, '')))}">(고덕지도)</a>` : ''}</div>
+        ${chk ? `<div><b>${esc(chk.label)}</b> ${esc(chk.value)}</div>` : ''}
+        ${flights ? `<div style="margin-top:6px"><b>✈️ 항공편</b>${flights}</div>` : ''}
+        ${rest ? `<div style="margin-top:6px">${rest}</div>` : ''}
+        <div style="margin-top:6px"><b>🚕 기사님께</b> 师傅，请送我到这个地址：${esc(zh)}</div>
+      </div>
+      ${days}
+    </div>
+  </div>`;
+}
+
+/* ───────── 아래에서 올라오는 창 ───────── */
+function openSheet(html) {
+  closeSheet();
+  const bg = document.createElement('div'); bg.className = 'sheet-bg'; bg.id = 'sheet';
+  bg.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  bg.addEventListener('click', e => { if (e.target === bg && !S.mustPick) closeSheet(); });
+  document.body.appendChild(bg);
+  const f = bg.querySelector('input,textarea,select'); if (f && !('ontouchstart' in window)) f.focus();
+}
+function closeSheet() { const s = document.getElementById('sheet'); if (s) s.remove(); }
+
+function askMe() {
+  S.mustPick = !S.me;
+  openSheet(`<h3>누구세요?</h3><div class="small muted">의견을 남길 때 이름으로 쓰여요. 이 폰에만 기억해요.</div>
+    <div class="pick">${members().map(m => `<button onclick="setMe('${esc(m)}')">${dotOf(m)}${esc(m)}</button>`).join('')}</div>`);
+}
+function setMe(m) { S.me = m; store('trip.me', m); S.mustPick = false; closeSheet(); render(); }
+
+function editInfo(row) {
+  const r = S.data.overview.info.find(x => x.row === row);
+  openSheet(`<h3>${esc(r.label)} 고치기</h3>
+    <form onsubmit="event.preventDefault();write('updateOverview',{row:${row},col:2,orig:${esc(JSON.stringify(r.value))},value:this.v.value},'고쳤어요')">
+      <label class="fld"><textarea name="v" rows="4">${esc(r.value)}</textarea></label>
+      <div class="btns"><button type="button" class="btn" onclick="closeSheet()">취소</button><button class="btn primary">저장</button></div>
+    </form>`);
+}
+
+function editFlight(fi) {
+  const f = S.data.overview.flights[fi]; const H = S.data.overview.flightHeader || [];
+  S.editFlight = f;
+  openSheet(`<h3>항공편 고치기</h3>
+    <form onsubmit="return saveFlight(event)">
+      ${f.cells.map((c, i) => `<label class="fld"><span>${esc(H[i] || ('칸 ' + (i + 1)))}</span>
+        ${f.editable[i] ? `<textarea name="c${i}" rows="${String(c).split('\n').length + 1}">${esc(c)}</textarea>` : `<div class="small muted">${esc(c)} (수식 칸이라 시트에서 고쳐 주세요)</div>`}</label>`).join('')}
+      <div class="btns"><button type="button" class="btn" onclick="closeSheet()">취소</button><button class="btn primary">저장</button></div>
+    </form>`);
+}
+function saveFlight(e) {
+  e.preventDefault();
+  const f = S.editFlight, form = e.target;
+  const changes = f.cells.map((c, i) => ({ i: i, v: form['c' + i] ? form['c' + i].value : c })).filter(x => x.v !== f.cells[x.i]);
+  if (!changes.length) { closeSheet(); return false; }
+  let p = Promise.resolve();
+  changes.forEach((x, k) => {
+    p = p.then(() => write('updateOverview', { row: f.row, col: x.i + 1, orig: f.cells[x.i], value: x.v }, k === changes.length - 1 ? '고쳤어요' : ''));
+  });
+  return false;
+}
+
+function uniq(arr) { return arr.filter((x, i) => x && arr.indexOf(x) === i); }
+function editItem(row) {
+  const it = row ? findItem(row) : { date: dayList()[S.day].date, time: '', who: '전원', cat: '', title: '', place: '', placeUrl: '', memo: '', status: '제안', owner: '', sourceUrl: '' };
+  const days = dayList().map(d => d.date);
+  const whoOpts = uniq(['전원'].concat(members(), S.data.items.map(i => i.who)));
+  const catOpts = uniq(Object.keys(CAT_ICON).concat(S.data.items.map(i => i.cat)));
+  S.editing = it;
+  openSheet(`<h3>${row ? '일정 수정' : '일정 추가'}</h3>
+    <form onsubmit="return saveItem(event)">
+      <div class="two">
+        <label class="fld"><span>날짜</span><select name="date">${days.map(d => `<option ${d === it.date ? 'selected' : ''}>${esc(d)}</option>`).join('')}</select></label>
+        <label class="fld"><span>시간 (중국 시간)</span><input name="time" type="time" value="${esc(normTime(it.time))}"></label>
+      </div>
+      <label class="fld"><span>일정</span><input name="title" required value="${esc(it.title)}" placeholder="예: 저녁 — 런허관"></label>
+      <div class="two">
+        <label class="fld"><span>누구</span><input name="who" list="whoL" value="${esc(it.who)}"><datalist id="whoL">${whoOpts.map(o => `<option value="${esc(o)}">`).join('')}</datalist></label>
+        <label class="fld"><span>구분</span><input name="cat" list="catL" value="${esc(it.cat)}"><datalist id="catL">${catOpts.map(o => `<option value="${esc(o)}">`).join('')}</datalist></label>
+      </div>
+      <div class="two">
+        <label class="fld"><span>상태</span><select name="status">${uniq(S.data.statusOptions.concat(it.status ? [it.status] : [])).map(o => `<option ${o === it.status ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></label>
+        <label class="fld"><span>담당</span><input name="owner" value="${esc(it.owner)}"></label>
+      </div>
+      <label class="fld"><span>장소 이름</span><input name="place" value="${esc(it.place)}" placeholder="예: 人和馆"></label>
+      <label class="fld"><span>지도 링크 (고덕지도 등, 비우면 장소 이름으로 검색)</span><input name="placeUrl" type="url" value="${esc(it.placeUrl)}" placeholder="https://"></label>
+      <label class="fld"><span>메모</span><textarea name="memo">${esc(it.memo)}</textarea></label>
+      <label class="fld"><span>출처 링크</span><input name="sourceUrl" type="url" value="${esc(it.sourceUrl)}" placeholder="https://"></label>
+      <div class="btns">
+        ${row ? `<button type="button" class="btn danger" onclick="delItem()">삭제</button>` : ''}
+        <span class="sp"></span>
+        <button type="button" class="btn" onclick="closeSheet()">취소</button>
+        <button class="btn primary">저장</button>
+      </div>
+    </form>`);
+}
+function saveItem(e) {
+  e.preventDefault();
+  const f = e.target, it = S.editing;
+  const fields = {};
+  ['date', 'who', 'cat', 'title', 'status', 'owner', 'place', 'placeUrl', 'memo', 'sourceUrl'].forEach(k => { fields[k] = f[k].value.trim(); });
+  const t = f.time.value;
+  fields.time = (t && normTime(it.time) === t) ? it.time : t; // 시간을 안 바꿨으면 원래 표기 유지
+  write('saveItem', it.row ? { row: it.row, orig: origOf(it), fields: fields } : { fields: fields }, it.row ? '고쳤어요' : '추가했어요');
+  if (!it.row) { const i = dayList().findIndex(d => d.date === fields.date); if (i >= 0) S.day = i; }
+  return false;
+}
+function delItem() {
+  const it = S.editing;
+  if (!confirm(`'${it.title}' 일정을 지울까요? 시트에서도 지워져요.`)) return;
+  S.open = null;
+  write('deleteItem', { row: it.row, orig: origOf(it) }, '지웠어요');
+}
+
+function showDriver() {
+  const addr = infoBy('숙소 주소'); const zh = addr ? addr.value.split('\n')[0] : '';
+  const d = document.createElement('div'); d.className = 'driver'; d.id = 'driver';
+  d.innerHTML = `<div class="big">${esc(zh)}</div><div class="req">师傅，请送我到这个地址。谢谢！</div><div class="ko">기사님, 이 주소로 가 주세요. 감사합니다!</div><button onclick="document.getElementById('driver').remove()">닫기</button>`;
+  document.body.appendChild(d);
+}
+
+/* 화면으로 돌아오면 새로 불러오기 (다른 사람이 고친 내용 반영) */
+function idle() { return S.data && !S.busy && !S.print && !document.getElementById('sheet'); }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && idle()) load(true); });
+setInterval(() => { if (document.visibilityState === 'visible' && idle()) load(true); }, 90000);
+
+S.scrollToNow = true;
+load();
+// GitHub Pages 에서는 화면 파일도 폰에 저장해 두기 (인터넷이 느리거나 끊겨도 열리게)
+if ('serviceWorker' in navigator && /github\.io$/.test(location.hostname)) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
 </body>
 </html>
