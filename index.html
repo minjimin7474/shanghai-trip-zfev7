@@ -42,7 +42,7 @@ input,select,textarea{font:inherit;color:var(--text)}
 /* 하단 탭 */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
 .nav .wrap{display:flex}
-.nav button{flex:1;min-width:0;border:0;background:none;padding:9px 0 10px;font-size:11px;font-weight:600;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:3px}
+.nav button{flex:1;min-width:0;border:0;background:none;padding:9px 0 10px;font-size:10.5px;white-space:nowrap;font-weight:600;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:3px}
 .nav button svg{width:22px;height:22px}
 .nav button[aria-current=true]{color:var(--accent)}
 
@@ -169,6 +169,23 @@ input,select,textarea{font:inherit;color:var(--text)}
 .todo-detail.clamp{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .todo-toggle{margin:4px 4px 0;font-size:13px}
 .todo-list.done{opacity:.8}
+.zh-search{margin:10px 0 0}
+.zh-search input{width:100%;border:0;background:var(--card);border-radius:14px;padding:11px 14px;box-shadow:var(--shadow)}
+.zh-sec{padding:14px 14px 6px}
+.zh-cat{font-size:12px;font-weight:700;color:var(--accent-d);margin:12px 2px 2px}
+.zh-cat:first-of-type{margin-top:0}
+.zh-row{display:flex;gap:10px;align-items:flex-start;padding:11px 2px;border-top:1px solid var(--line);cursor:pointer}
+.zh-cat + .zh-row{border-top:0}
+.zh-row:active{background:var(--soft)}
+.zh-row.sub{margin-left:14px;padding-left:10px;border-left:2px solid var(--accent-bg)}
+.zh-main{flex:1;min-width:0}
+.zh-ko{font-size:12.5px;color:var(--sub)}
+.zh-tag{font-size:11px;font-weight:700;color:var(--accent-d);background:var(--accent-bg);border-radius:999px;padding:0 7px}
+.zh-text{font-family:"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei",var(--font);font-size:18px;font-weight:600;color:var(--ink);line-height:1.45;margin-top:2px;word-break:break-all}
+.zh-pron{font-size:12.5px;color:#7a6d72;margin-top:1px}
+.zh-memo{font-size:12px;color:var(--sub);margin-top:3px}
+.zh-acts{display:flex;flex-direction:column;gap:6px;flex:none}
+.zh-btn{border:0;background:var(--soft);color:var(--accent-d);width:34px;height:34px;border-radius:10px;display:grid;place-items:center;padding:0}
 .memo-intro{margin:10px 2px 0}
 .compose textarea{width:100%;border:0;background:var(--soft);border-radius:12px;padding:10px 12px;resize:vertical;min-height:76px}
 .memo-card{padding:14px 16px}
@@ -195,7 +212,7 @@ input,select,textarea{font:inherit;color:var(--text)}
 .pick .dot{width:11px;height:11px}
 
 .driver{position:fixed;inset:0;z-index:60;background:#fff;color:#000;display:flex;flex-direction:column;justify-content:center;padding:24px;text-align:center}
-.driver .big{font-size:30px;font-weight:800;line-height:1.4;word-break:break-all}
+.driver .big{font-family:"PingFang SC","Hiragino Sans GB","Noto Sans SC",var(--font);font-size:30px;font-weight:800;line-height:1.4;word-break:break-all}
 .driver .req{font-size:22px;margin-top:20px}
 .driver .ko{font-size:14px;color:#555;margin-top:6px}
 .driver button{margin-top:32px;align-self:center;border:0;background:#f2f2f2;border-radius:12px;padding:10px 20px;color:#000}
@@ -404,20 +421,21 @@ function render() {
   const me = S.me ? `${dotOf(S.me)}${esc(S.me)}` : '나는?';
   document.getElementById('app').innerHTML = `
     <header class="top"><div class="wrap">
-      <h1>${{ overview: '여행 개요', schedule: '일정', resv: '예약', todo: '할 일', memo: '메모' }[S.tab] || '여행 개요'}</h1>
+      <h1>${{ overview: '여행 개요', schedule: '일정', resv: '예약', todo: '할 일', memo: '메모', zh: '배달 중국어' }[S.tab] || '여행 개요'}</h1>
       <button class="iconbtn" onclick="openPrint()" title="PDF로 저장" aria-label="PDF로 저장"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></button>
       <button class="iconbtn" onclick="load()" title="새로고침" aria-label="새로고침"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
       <button class="me" onclick="askMe()">${me}</button>
     </div></header>
     ${S.busy ? '<div class="busy">시트와 맞추는 중…</div>' : ''}
     ${S.offline ? `<div class="wrap"><div class="offline">📴 구글에 연결되지 않아 <b>${esc(new Date(S.data.fetchedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</b>에 저장된 일정을 보여 주고 있어요. 고치기·의견·메모는 연결되면 할 수 있어요.</div></div>` : ''}
-    <main class="wrap">${S.tab === 'schedule' ? renderSchedule() : S.tab === 'resv' ? renderResv() : S.tab === 'todo' ? renderTodos() : S.tab === 'memo' ? renderMemos() : renderOverview(S.data.overview)}</main>
+    <main class="wrap">${S.tab === 'schedule' ? renderSchedule() : S.tab === 'resv' ? renderResv() : S.tab === 'todo' ? renderTodos() : S.tab === 'zh' ? renderPhrases() : S.tab === 'memo' ? renderMemos() : renderOverview(S.data.overview)}</main>
     <nav class="nav"><div class="wrap">
       <button aria-current="${S.tab === 'overview'}" onclick="setTab('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>개요</button>
       <button aria-current="${S.tab === 'schedule'}" onclick="setTab('schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>일정</button>
       <button aria-current="${S.tab === 'resv'}" onclick="setTab('resv')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5V14a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>예약</button>
       <button aria-current="${S.tab === 'todo'}" onclick="setTab('todo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>할 일</button>
       <button aria-current="${S.tab === 'memo'}" onclick="setTab('memo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8.5 12.5h7M8.5 16h5"/></svg>메모</button>
+      <button aria-current="${S.tab === 'zh'}" onclick="setTab('zh')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 9h7M12 7.5v6M9.5 13.5c1.5-.6 3.5-2 4.5-4.5"/></svg>중국어</button>
     </div></nav>`;
   const nx = document.querySelector('.item.next');
   if (S.scrollToNow && nx) { nx.scrollIntoView({ block: 'center' }); S.scrollToNow = false; }
@@ -743,6 +761,65 @@ function delResv() {
   if (!confirm(`'${it.title}' 예약을 지울까요? 시트에서도 지워져요.`)) return;
   S.openResv = null;
   write('deleteReservation', { row: it.row, orig: resvOrig(it) }, '지웠어요');
+}
+
+/* ───────── 배달 중국어 (읽기 전용, 누르면 복사) ───────── */
+function renderPhrases() {
+  const P = S.data.phrases;
+  if (!P || !P.sections) return '<div class="empty">배달 중국어 탭을 찾지 못했어요</div>';
+  const q = (S.zhQuery || '').trim().toLowerCase();
+  const sec = S.zhSec == null ? 'all' : S.zhSec;
+  const short = t => t.replace(/^\d+\.\s*/, '').replace(/\s*[(（·].*$/, '').trim();
+  const match = r => !q || [r.ko, r.zh, r.pron, r.memo, r.cat].some(x => (x || '').toLowerCase().indexOf(q) >= 0);
+  const blocks = P.sections.map((s, si) => {
+    if (sec !== 'all' && sec !== si) return '';
+    const rows = s.rows.map((r, ri) => ({ r: r, ri: ri })).filter(x => match(x.r));
+    if (!rows.length) return '';
+    let lastCat = null;
+    const body = rows.map(x => {
+      const r = x.r, sub = /^└/.test(r.ko);
+      const head = r.cat !== lastCat && r.cat ? `<div class="zh-cat">${esc(r.cat)}</div>` : '';
+      lastCat = r.cat;
+      return head + `<div class="zh-row ${sub ? 'sub' : ''}" onclick="copyZh(${si},${x.ri})">
+        <div class="zh-main">
+          <div class="zh-ko">${sub ? '<span class="zh-tag">대표 메뉴</span>' : esc(r.ko)}</div>
+          <div class="zh-text" lang="zh-CN">${esc(r.zh)}</div>
+          ${r.pron ? `<div class="zh-pron">${esc(r.pron)}</div>` : ''}
+          ${r.memo ? `<div class="zh-memo">${esc(r.memo)}</div>` : ''}
+        </div>
+        <div class="zh-acts">
+          <button class="zh-btn" onclick="event.stopPropagation();copyZh(${si},${x.ri})" aria-label="복사"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></button>
+          <button class="zh-btn" onclick="event.stopPropagation();bigZh(${si},${x.ri})" aria-label="크게 보기"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<section class="card zh-sec"><h2>${esc(s.title)}</h2>${body}</section>`;
+  }).join('');
+  return `
+    ${P.intro ? `<div class="memo-intro small muted">${esc(P.intro)}</div>` : ''}
+    <div class="zh-search"><input type="search" placeholder="뜻·중국어·읽는 법으로 찾기" value="${esc(S.zhQuery || '')}" oninput="S.zhQuery=this.value;renderKeepFocus()"></div>
+    <div class="filter">${[['all', '전체']].concat(P.sections.map((s, i) => [i, short(s.title)])).map(x => `<button class="fbtn" aria-pressed="${sec === x[0]}" onclick="S.zhSec=${x[0] === 'all' ? "'all'" : x[0]};render();window.scrollTo(0,0)">${esc(x[1])}</button>`).join('')}</div>
+    ${blocks || '<div class="empty">찾는 문장이 없어요</div>'}
+    <div style="height:8px"></div>`;
+}
+function renderKeepFocus() { // 검색할 때 입력칸 포커스 유지
+  const pos = document.activeElement && document.activeElement.selectionStart;
+  render();
+  const i = document.querySelector('.zh-search input');
+  if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch (e) { /* 일부 브라우저는 search 입력칸 커서 지정 불가 */ } }
+}
+function phraseAt(si, ri) { return S.data.phrases.sections[si].rows[ri]; }
+function copyZh(si, ri) {
+  const r = phraseAt(si, ri);
+  const done = () => toast('복사했어요 · ' + (r.zh.length > 16 ? r.zh.slice(0, 16) + '…' : r.zh));
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(r.zh).then(done, () => copyText(r.zh));
+  else copyText(r.zh);
+}
+function bigZh(si, ri) {
+  const r = phraseAt(si, ri);
+  const d = document.createElement('div'); d.className = 'driver'; d.id = 'driver';
+  d.innerHTML = `<div class="big" lang="zh-CN">${esc(r.zh)}</div>${r.ko && !/^└/.test(r.ko) ? `<div class="ko">${esc(r.ko)}</div>` : ''}<button onclick="document.getElementById('driver').remove()">닫기</button>`;
+  document.body.appendChild(d);
 }
 
 /* ───────── 할 일 (체크리스트) ───────── */
