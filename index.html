@@ -145,11 +145,13 @@ input,select,textarea{font:inherit;color:var(--text)}
 .resv-head .ic{font-size:18px;line-height:1.4}
 .resv-main{flex:1;min-width:0;cursor:pointer}
 .resv-title{font-weight:600;color:var(--ink);line-height:1.45;word-break:break-word}
-.stpill{flex:none;border:0;border-radius:999px;padding:4px 22px 4px 10px;font-size:12px;font-weight:700;appearance:none;-webkit-appearance:none;background-repeat:no-repeat;background-position:right 8px center;background-size:8px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E")}
-.stpill.ok{background-color:#e3f4e9;color:#2f8550}
-.stpill.todo{background-color:var(--accent-bg);color:var(--accent-d)}
-.stpill.warn{background-color:#fff1dc;color:#a76712}
-.stpill.skip{background-color:var(--soft);color:var(--sub)}
+.stpill{position:relative;flex:none;display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px 0 11px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer}
+.stpill svg{opacity:.7}
+.stsel{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;font-size:16px;appearance:none;-webkit-appearance:none;cursor:pointer}
+.stpill.ok{background:#e3f4e9;color:#2f8550}
+.stpill.todo{background:var(--accent-bg);color:var(--accent-d)}
+.stpill.warn{background:#fff1dc;color:#a76712}
+.stpill.skip{background:var(--soft);color:var(--sub)}
 .resv-meta{display:flex;flex-wrap:wrap;gap:6px 12px;margin:8px 0 0 28px;font-size:12.5px;color:var(--sub);align-items:center}
 .resv-code{margin:8px 0 0 28px;font-size:13px}
 .resv-memo{margin:8px 0 0 28px;font-size:13px;color:#6f6368;background:var(--soft);border-radius:10px;padding:8px 10px;cursor:pointer}
@@ -171,6 +173,16 @@ input,select,textarea{font:inherit;color:var(--text)}
 .todo-detail.clamp{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .todo-toggle{margin:4px 4px 0;font-size:13px}
 .todo-list.done{opacity:.8}
+.zh-guide-t{font-size:12.5px;font-weight:700;color:var(--ink);margin:0 0 4px -16px}
+.zh-guide ul{margin:0;padding:0 0 0 2px}
+.zh-head{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:2px 2px;text-align:left}
+.zh-head-t{flex:1;min-width:0;font-size:15px;font-weight:700;color:var(--ink)}
+.zh-count{font-size:12px;font-weight:700;color:var(--accent-d);background:var(--accent-bg);border-radius:999px;padding:1px 8px}
+.zh-chev{flex:none;color:var(--sub);transition:transform .15s}
+.zh-sec.open .zh-chev{transform:rotate(180deg)}
+.zh-sec.closed{padding:14px}
+.zh-body{margin-top:8px}
+.zh-all{display:flex;gap:6px;justify-content:flex-end;align-items:center;color:var(--sub);font-size:12px;margin:8px 4px -4px}
 .zh-guide{margin:10px 0 0;padding:12px 14px 12px 30px;background:var(--card);border-radius:16px;box-shadow:var(--shadow);font-size:12.5px;line-height:1.6;color:#6f6368}
 .zh-guide li+li{margin-top:2px}
 .zh-search{margin:10px 0 0}
@@ -429,7 +441,7 @@ function render() {
   const me = S.me ? `${dotOf(S.me)}${esc(S.me)}` : '나는?';
   document.getElementById('app').innerHTML = `
     <header class="top"><div class="wrap">
-      <h1>${{ overview: '여행 개요', schedule: '일정', resv: '예약', todo: '할 일', memo: '메모', zh: '배달 중국어' }[S.tab] || '여행 개요'}</h1>
+      <h1>${{ overview: '여행 개요', schedule: '일정', resv: '예약', todo: '할 일', memo: '메모', zh: '여행용 중국어' }[S.tab] || '여행 개요'}</h1>
       <button class="iconbtn" onclick="openPrint()" title="PDF로 저장" aria-label="PDF로 저장"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></button>
       <button class="iconbtn" onclick="load()" title="새로고침" aria-label="새로고침"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
       <button class="me" onclick="askMe()">${me}</button>
@@ -718,9 +730,10 @@ function renderResvItem(it) {
         <div class="small muted">${esc(it.cat)}</div>
         <div class="resv-title">${esc(it.title)}</div>
       </div>
-      <select class="stpill ${kind}" onchange="setResvStatus(${it.row}, this.value)" aria-label="상태">
-        ${(it.status ? [] : ['']).concat(opts).map(o => `<option ${o === it.status ? 'selected' : ''} value="${esc(o)}">${esc(o || '상태')}</option>`).join('')}
-      </select>
+      <label class="stpill ${kind}"><span>${esc(it.status || '상태')}</span><svg viewBox="0 0 10 6" width="9" height="6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M1 1l4 4 4-4"/></svg>
+        <select class="stsel" onchange="setResvStatus(${it.row}, this.value)" aria-label="상태 바꾸기">
+          ${(it.status ? [] : ['']).concat(opts).map(o => `<option ${o === it.status ? 'selected' : ''} value="${esc(o)}">${esc(o || '상태')}</option>`).join('')}
+        </select></label>
     </div>
     <div class="resv-meta">${it.time ? `<span>🕐 ${esc(it.time)}</span>` : ''}${it.people ? `<span>👥 ${esc(it.people)}</span>` : ''}${owner}</div>
     ${it.code ? `<div class="resv-code">예약번호 <b>${esc(it.code)}</b> <button class="linkbtn" onclick="copyText(${esc(JSON.stringify(it.code))})">복사</button></div>` : ''}
@@ -778,7 +791,7 @@ function delResv() {
   write('deleteReservation', { row: it.row, orig: resvOrig(it) }, '지웠어요');
 }
 
-/* ───────── 배달 중국어 (읽기 전용, 누르면 복사) ───────── */
+/* ───────── 여행용 중국어 (읽기 전용, 누르면 복사, 섹션 접기) ───────── */
 const ZH_GUIDE = [ // 시트 A2 안내 대신 웹앱용 안내
   '단어/문장별 복사 버튼 → 배달앱에 붙여넣기',
   "주문은 알리페이 안 '淘宝闪购'(옛 어러머) 미니프로그램 - 해외 카드 결제 가능",
@@ -786,7 +799,7 @@ const ZH_GUIDE = [ // 시트 A2 안내 대신 웹앱용 안내
 ];
 function renderPhrases() {
   const P = S.data.phrases;
-  if (!P || !P.sections) return '<div class="empty">배달 중국어 탭을 찾지 못했어요</div>';
+  if (!P || !P.sections) return '<div class="empty">여행용 중국어 탭을 찾지 못했어요</div>';
   const q = (S.zhQuery || '').trim().toLowerCase();
   const sec = S.zhSec == null ? 'all' : S.zhSec;
   const short = t => t.replace(/^\d+\.\s*/, '').replace(/\s*[(（·].*$/, '').trim();
@@ -795,6 +808,11 @@ function renderPhrases() {
     if (sec !== 'all' && sec !== si) return '';
     const rows = s.rows.map((r, ri) => ({ r: r, ri: ri })).filter(x => match(x.r));
     if (!rows.length) return '';
+    const opened = !!q || sec === si || !!zhOpen()[si]; // 검색 중이거나 칩으로 고른 섹션은 항상 펼침
+    const head = `<button class="zh-head" onclick="toggleZhSec(${si})" aria-expanded="${opened}">
+        <span class="zh-head-t">${esc(s.title.replace(/\s{2,}.*$/, ''))}</span><span class="zh-count">${rows.length}</span>
+        <svg class="zh-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>`;
+    if (!opened) return `<section class="card zh-sec closed">${head}</section>`;
     let lastCat = null;
     const body = rows.map(x => {
       const r = x.r, sub = /^└/.test(r.ko);
@@ -813,14 +831,25 @@ function renderPhrases() {
         </div>
       </div>`;
     }).join('');
-    return `<section class="card zh-sec"><h2>${esc(s.title)}</h2>${body}</section>`;
+    return `<section class="card zh-sec open">${head}<div class="zh-body">${body}</div></section>`;
   }).join('');
   return `
-    <ul class="zh-guide">${ZH_GUIDE.map(g => `<li>${esc(g)}</li>`).join('')}</ul>
+    <div class="zh-guide"><div class="zh-guide-t">🛵 배달 주문할 때</div><ul>${ZH_GUIDE.map(g => `<li>${esc(g)}</li>`).join('')}</ul></div>
     <div class="zh-search"><input type="search" placeholder="뜻·중국어·읽는 법으로 찾기" value="${esc(S.zhQuery || '')}" oninput="S.zhQuery=this.value;renderKeepFocus()"></div>
     <div class="filter">${[['all', '전체']].concat(P.sections.map((s, i) => [i, short(s.title)])).map(x => `<button class="fbtn" aria-pressed="${sec === x[0]}" onclick="S.zhSec=${x[0] === 'all' ? "'all'" : x[0]};render();window.scrollTo(0,0)">${esc(x[1])}</button>`).join('')}</div>
+    ${!q && sec === 'all' ? `<div class="zh-all"><button class="linkbtn" onclick="setZhAll(true)">모두 펼치기</button><span>·</span><button class="linkbtn" onclick="setZhAll(false)">모두 접기</button></div>` : ''}
     ${blocks || '<div class="empty">찾는 문장이 없어요</div>'}
     <div style="height:8px"></div>`;
+}
+function zhOpen() { if (!S.zhOpenMap) { try { S.zhOpenMap = JSON.parse(localStorage.getItem('trip.zhOpen') || '{}'); } catch (e) { S.zhOpenMap = {}; } } return S.zhOpenMap; }
+function saveZhOpen() { try { localStorage.setItem('trip.zhOpen', JSON.stringify(S.zhOpenMap)); } catch (e) { /* 저장 못 해도 화면은 동작 */ } }
+function toggleZhSec(si) {
+  const q = (S.zhQuery || '').trim();
+  if (q || (S.zhSec != null && S.zhSec !== 'all')) return; // 검색·칩 선택 중엔 항상 펼친 상태
+  const m = zhOpen(); m[si] = !m[si]; saveZhOpen(); render();
+}
+function setZhAll(open) {
+  const m = zhOpen(); (S.data.phrases.sections || []).forEach((s, i) => { m[i] = open; }); saveZhOpen(); render();
 }
 function renderKeepFocus() { // 검색할 때 입력칸 포커스 유지
   const pos = document.activeElement && document.activeElement.selectionStart;
