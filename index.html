@@ -407,7 +407,8 @@ function render() {
 function setTab(t) { S.tab = t; store('trip.tab', t); S.scrollToNow = t === 'schedule'; render(); window.scrollTo(0, 0); }
 
 function infoBy(label) { return S.data.overview.info.find(r => r.label.indexOf(label) >= 0); }
-function tripTitle(o) { return (o.title || '').replace(/_v\d+$/, '').replace(/일정$/, '').trim() || '여행'; }
+const TRIP_TITLE = '주술동사 상하이 여행 🇨🇳'; // 타이틀 카드·PDF 제목 (비우면 시트 '안내' 탭 제목을 씀)
+function tripTitle(o) { return TRIP_TITLE || (o.title || '').replace(/_v\d+$/, '').replace(/일정$/, '').trim() || '여행'; }
 function tripDates(o) { return (o.subtitle || '').split('·').slice(0, 2).map(s => s.trim()).filter(Boolean).join(' · '); }
 
 function renderOverview(o) {
