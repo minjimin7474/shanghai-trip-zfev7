@@ -169,6 +169,8 @@ input,select,textarea{font:inherit;color:var(--text)}
 .todo-detail.clamp{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .todo-toggle{margin:4px 4px 0;font-size:13px}
 .todo-list.done{opacity:.8}
+.zh-guide{margin:10px 0 0;padding:12px 14px 12px 30px;background:var(--card);border-radius:16px;box-shadow:var(--shadow);font-size:12.5px;line-height:1.6;color:#6f6368}
+.zh-guide li+li{margin-top:2px}
 .zh-search{margin:10px 0 0}
 .zh-search input{width:100%;border:0;background:var(--card);border-radius:14px;padding:11px 14px;box-shadow:var(--shadow)}
 .zh-sec{padding:14px 14px 6px}
@@ -764,6 +766,11 @@ function delResv() {
 }
 
 /* ───────── 배달 중국어 (읽기 전용, 누르면 복사) ───────── */
+const ZH_GUIDE = [ // 시트 A2 안내 대신 웹앱용 안내
+  '단어/문장별 복사 버튼 → 배달앱에 붙여넣기',
+  "주문은 알리페이 안 '淘宝闪购'(옛 어러머) 미니프로그램 - 해외 카드 결제 가능",
+  '기사와는 앱 채팅으로 (번역 버튼 있음), 기사 전화를 두 번 못 받으면 주문이 취소되니 도착할 때쯤엔 폰 보기',
+];
 function renderPhrases() {
   const P = S.data.phrases;
   if (!P || !P.sections) return '<div class="empty">배달 중국어 탭을 찾지 못했어요</div>';
@@ -796,7 +803,7 @@ function renderPhrases() {
     return `<section class="card zh-sec"><h2>${esc(s.title)}</h2>${body}</section>`;
   }).join('');
   return `
-    ${P.intro ? `<div class="memo-intro small muted">${esc(P.intro)}</div>` : ''}
+    <ul class="zh-guide">${ZH_GUIDE.map(g => `<li>${esc(g)}</li>`).join('')}</ul>
     <div class="zh-search"><input type="search" placeholder="뜻·중국어·읽는 법으로 찾기" value="${esc(S.zhQuery || '')}" oninput="S.zhQuery=this.value;renderKeepFocus()"></div>
     <div class="filter">${[['all', '전체']].concat(P.sections.map((s, i) => [i, short(s.title)])).map(x => `<button class="fbtn" aria-pressed="${sec === x[0]}" onclick="S.zhSec=${x[0] === 'all' ? "'all'" : x[0]};render();window.scrollTo(0,0)">${esc(x[1])}</button>`).join('')}</div>
     ${blocks || '<div class="empty">찾는 문장이 없어요</div>'}
