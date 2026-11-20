@@ -128,6 +128,30 @@ input,select,textarea{font:inherit;color:var(--text)}
 .nowline{display:flex;align-items:center;gap:8px;color:var(--now);font-size:12px;font-weight:700;margin:4px 0}
 .nowline::after{content:"";flex:1;height:1.5px;background:var(--now);border-radius:2px}
 .empty{text-align:center;color:var(--sub);padding:40px 0}
+.resv-sum{padding:16px}
+.resv-sum-top{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.resv-big{font-size:24px;font-weight:700;color:var(--ink);line-height:1.2}
+.resv-big span{font-size:14px;font-weight:500;color:var(--sub)}
+.resv-left{font-size:13px;color:var(--sub)}
+.resv-left b{color:var(--accent)}
+.bar{height:8px;background:var(--soft);border-radius:999px;margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.resv-date{font-size:13px;font-weight:700;color:var(--sub);margin:16px 4px 6px}
+.card.resv{padding:14px 14px 12px;margin:8px 0}
+.card.resv.skip{opacity:.55}
+.resv-head{display:flex;gap:10px;align-items:flex-start}
+.resv-head .ic{font-size:18px;line-height:1.4}
+.resv-main{flex:1;min-width:0;cursor:pointer}
+.resv-title{font-weight:600;color:var(--ink);line-height:1.45;word-break:break-word}
+.stpill{flex:none;border:0;border-radius:999px;padding:4px 22px 4px 10px;font-size:12px;font-weight:700;appearance:none;-webkit-appearance:none;background-repeat:no-repeat;background-position:right 8px center;background-size:8px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6'/%3E%3C/svg%3E")}
+.stpill.ok{background-color:#e3f4e9;color:#2f8550}
+.stpill.todo{background-color:var(--accent-bg);color:var(--accent-d)}
+.stpill.warn{background-color:#fff1dc;color:#a76712}
+.stpill.skip{background-color:var(--soft);color:var(--sub)}
+.resv-meta{display:flex;flex-wrap:wrap;gap:6px 12px;margin:8px 0 0 28px;font-size:12.5px;color:var(--sub);align-items:center}
+.resv-code{margin:8px 0 0 28px;font-size:13px}
+.resv-memo{margin:8px 0 0 28px;font-size:13px;color:#6f6368;background:var(--soft);border-radius:10px;padding:8px 10px;cursor:pointer}
+.resv-memo.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .memo-intro{margin:10px 2px 0}
 .compose textarea{width:100%;border:0;background:var(--soft);border-radius:12px;padding:10px 12px;resize:vertical;min-height:76px}
 .memo-card{padding:14px 16px}
@@ -363,17 +387,18 @@ function render() {
   const me = S.me ? `${dotOf(S.me)}${esc(S.me)}` : '나는?';
   document.getElementById('app').innerHTML = `
     <header class="top"><div class="wrap">
-      <h1>${{ overview: '여행 개요', schedule: '일정', memo: '메모' }[S.tab] || '여행 개요'}</h1>
+      <h1>${{ overview: '여행 개요', schedule: '일정', resv: '예약', memo: '메모' }[S.tab] || '여행 개요'}</h1>
       <button class="iconbtn" onclick="openPrint()" title="PDF로 저장" aria-label="PDF로 저장"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></button>
       <button class="iconbtn" onclick="load()" title="새로고침" aria-label="새로고침"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
       <button class="me" onclick="askMe()">${me}</button>
     </div></header>
     ${S.busy ? '<div class="busy">시트와 맞추는 중…</div>' : ''}
     ${S.offline ? `<div class="wrap"><div class="offline">📴 구글에 연결되지 않아 <b>${esc(new Date(S.data.fetchedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</b>에 저장된 일정을 보여 주고 있어요. 고치기·의견·메모는 연결되면 할 수 있어요.</div></div>` : ''}
-    <main class="wrap">${S.tab === 'schedule' ? renderSchedule() : S.tab === 'memo' ? renderMemos() : renderOverview(S.data.overview)}</main>
+    <main class="wrap">${S.tab === 'schedule' ? renderSchedule() : S.tab === 'resv' ? renderResv() : S.tab === 'memo' ? renderMemos() : renderOverview(S.data.overview)}</main>
     <nav class="nav"><div class="wrap">
       <button aria-current="${S.tab === 'overview'}" onclick="setTab('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>개요</button>
       <button aria-current="${S.tab === 'schedule'}" onclick="setTab('schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>일정</button>
+      <button aria-current="${S.tab === 'resv'}" onclick="setTab('resv')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5V14a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>예약</button>
       <button aria-current="${S.tab === 'memo'}" onclick="setTab('memo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8.5 12.5h7M8.5 16h5"/></svg>메모</button>
     </div></nav>`;
   const nx = document.querySelector('.item.next');
@@ -597,9 +622,108 @@ function renderPrint() {
         <div style="margin-top:6px"><b>🚕 기사님께</b> 师傅，请送我到这个地址：${esc(zh)}</div>
       </div>
       ${days}
+      ${resvData().items.length ? `<h2>🎫 예약</h2><table>${resvData().items.map(it => `<tr><td class="t" style="width:86px">${esc(it.date)}</td><td><span class="ti">${resvIcon(it.cat)} ${esc(it.title)}</span><span class="tag">${esc(it.status)}</span>${it.code ? `<div class="pl">예약번호 ${esc(it.code)}</div>` : ''}${it.time ? `<div class="mm">${esc(it.time)}${it.people ? ' · ' + esc(it.people) : ''}</div>` : ''}</td></tr>`).join('')}</table>` : ''}
       ${(S.data.memos || []).length ? `<h2>📝 메모</h2><table>${sortedMemos().map(m => `<tr><td><b>${esc(m.name || '')}</b> <span style="color:#7d7177">${esc(memoTime(m))}</span><div class="mm">${esc(m.text)}</div>${parseLines(m.comments).map(c => `<div class="mm">└ ${esc(c.name ? c.name + ': ' : '')}${esc(c.text)}</div>`).join('')}</td></tr>`).join('')}</table>` : ''}
     </div>
   </div>`;
+}
+
+/* ───────── 예약 ───────── */
+function resvData() { return S.data.reservations || { items: [], statusOptions: [] }; }
+function resvKind(s) { return /완료/.test(s) ? 'ok' : /필요 없음/.test(s) ? 'skip' : /확인/.test(s) ? 'warn' : 'todo'; }
+function resvIcon(c) {
+  const map = [[/항공/, '✈️'], [/숙소/, '🏨'], [/입장권|얼리/, '🎟️'], [/DPA/, '🎢'], [/메이크업/, '💄'], [/스냅|촬영|치파오|체험/, '📸'], [/점심|저녁|식사|마켓|야식/, '🍽️']];
+  const hit = map.find(m => m[0].test(c || ''));
+  return hit ? hit[1] : '📌';
+}
+function renderResv() {
+  const R = resvData(), all = R.items;
+  const active = all.filter(it => resvKind(it.status) !== 'skip');
+  const done = active.filter(it => resvKind(it.status) === 'ok').length;
+  const todo = active.length - done;
+  const f = S.resvFilter || 'all';
+  const shown = all.filter(it => f === 'all' || (f === 'todo' ? ['todo', 'warn'].indexOf(resvKind(it.status)) >= 0 : resvKind(it.status) === 'ok'));
+  const dates = []; shown.forEach(it => { if (dates.indexOf(it.date) < 0) dates.push(it.date); });
+  const pct = active.length ? Math.round(done / active.length * 100) : 0;
+  return `
+    <section class="card resv-sum">
+      <div class="resv-sum-top"><div><div class="small muted">예약 진행</div><div class="resv-big">${done}<span> / ${active.length} 완료</span></div></div>
+        <div class="resv-left">${todo ? `남은 할 일 <b>${todo}</b>개` : '모두 끝났어요 🎉'}</div></div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+    </section>
+    <div class="filter">${[['all', '전체 ' + all.length], ['todo', '할 일 ' + todo], ['ok', '완료 ' + done]].map(x => `<button class="fbtn" aria-pressed="${f === x[0]}" onclick="S.resvFilter='${x[0]}';render()">${x[1]}</button>`).join('')}</div>
+    ${dates.length ? dates.map(d => `<div class="resv-date">${esc(d || '날짜 미정')}</div>${shown.filter(it => it.date === d).map(renderResvItem).join('')}`).join('') : '<div class="empty">해당하는 예약이 없어요</div>'}
+    <button class="addbtn" style="margin-top:12px" onclick="editResv(null)">＋ 예약 추가</button>`;
+}
+function renderResvItem(it) {
+  const R = resvData(), open = S.openResv === it.row, kind = resvKind(it.status);
+  const owner = it.owner ? (members().indexOf(it.owner) >= 0 ? `<span class="who">${dotOf(it.owner)}${esc(it.owner)}</span>` : `<span class="who">${esc(it.owner)}</span>`) : '';
+  const opts = R.statusOptions.concat(it.status && R.statusOptions.indexOf(it.status) < 0 ? [it.status] : []);
+  return `<article class="card resv ${kind === 'skip' ? 'skip' : ''}">
+    <div class="resv-head">
+      <span class="ic">${resvIcon(it.cat)}</span>
+      <div class="resv-main" onclick="S.openResv=S.openResv===${it.row}?null:${it.row};render()">
+        <div class="small muted">${esc(it.cat)}</div>
+        <div class="resv-title">${esc(it.title)}</div>
+      </div>
+      <select class="stpill ${kind}" onchange="setResvStatus(${it.row}, this.value)" aria-label="상태">
+        ${(it.status ? [] : ['']).concat(opts).map(o => `<option ${o === it.status ? 'selected' : ''} value="${esc(o)}">${esc(o || '상태')}</option>`).join('')}
+      </select>
+    </div>
+    <div class="resv-meta">${it.time ? `<span>🕐 ${esc(it.time)}</span>` : ''}${it.people ? `<span>👥 ${esc(it.people)}</span>` : ''}${owner}</div>
+    ${it.code ? `<div class="resv-code">예약번호 <b>${esc(it.code)}</b> <button class="linkbtn" onclick="copyText(${esc(JSON.stringify(it.code))})">복사</button></div>` : ''}
+    ${it.memo ? `<div class="resv-memo pre ${open ? '' : 'clamp'}" onclick="S.openResv=${it.row};render()">${linkify(it.memo)}</div>` : ''}
+    ${open ? `<div class="btns" style="margin-top:10px">${it.link ? `<a class="btn" href="${esc(it.link)}" rel="noopener">🔗 링크</a>` : ''}<span style="flex:1"></span><button class="btn" onclick="editResv(${it.row})">✏️ 수정</button></div>` : ''}
+  </article>`;
+}
+function findResv(row) { return resvData().items.find(i => i.row === row); }
+function resvOrig(it) { return { date: it.date, cat: it.cat, title: it.title }; }
+function setResvStatus(row, v) {
+  const it = findResv(row); if (!it || v === it.status) return;
+  write('saveReservation', { row: row, orig: resvOrig(it), fields: { status: v } }, `'${v}'(으)로 바꿨어요`);
+}
+function editResv(row) {
+  const R = resvData();
+  const it = row ? findResv(row) : { date: '', cat: '', title: '', time: '', people: '4명', status: R.statusOptions[0] || '예약 전', owner: '', code: '', memo: '' };
+  S.editingResv = it;
+  const dates = uniq(R.items.map(i => i.date)), cats = uniq(R.items.map(i => i.cat)), owners = uniq(['각자'].concat(members(), R.items.map(i => i.owner)));
+  openSheet(`<h3>${row ? '예약 수정' : '예약 추가'}</h3>
+    <form onsubmit="return saveResv(event)">
+      <div class="two">
+        <label class="fld"><span>날짜</span><input name="date" list="rdL" value="${esc(it.date)}" placeholder="예: 11/28 (토)"><datalist id="rdL">${dates.map(o => `<option value="${esc(o)}">`).join('')}</datalist></label>
+        <label class="fld"><span>구분</span><input name="cat" list="rcL" value="${esc(it.cat)}" placeholder="예: 저녁"><datalist id="rcL">${cats.map(o => `<option value="${esc(o)}">`).join('')}</datalist></label>
+      </div>
+      <label class="fld"><span>장소·내용</span><input name="title" required value="${esc(it.title)}"></label>
+      <div class="two">
+        <label class="fld"><span>시간</span><input name="time" value="${esc(it.time)}" placeholder="예: 18:30"></label>
+        <label class="fld"><span>인원</span><input name="people" value="${esc(it.people)}"></label>
+      </div>
+      <div class="two">
+        <label class="fld"><span>상태</span><select name="status">${uniq(R.statusOptions.concat(it.status ? [it.status] : [])).map(o => `<option ${o === it.status ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></label>
+        <label class="fld"><span>담당</span><input name="owner" list="roL" value="${esc(it.owner)}"><datalist id="roL">${owners.map(o => `<option value="${esc(o)}">`).join('')}</datalist></label>
+      </div>
+      <label class="fld"><span>예약번호</span><input name="code" value="${esc(it.code)}"></label>
+      <label class="fld"><span>메모</span><textarea name="memo">${esc(it.memo)}</textarea></label>
+      <div class="btns">
+        ${row ? `<button type="button" class="btn danger" onclick="delResv()">삭제</button>` : ''}
+        <span class="sp"></span>
+        <button type="button" class="btn" onclick="closeSheet()">취소</button>
+        <button class="btn primary">저장</button>
+      </div>
+    </form>`);
+}
+function saveResv(e) {
+  e.preventDefault();
+  const f = e.target, it = S.editingResv, fields = {};
+  ['date', 'cat', 'title', 'time', 'people', 'status', 'owner', 'code', 'memo'].forEach(k => { fields[k] = f[k].value.trim(); });
+  write('saveReservation', it.row ? { row: it.row, orig: resvOrig(it), fields: fields } : { fields: fields }, it.row ? '고쳤어요' : '추가했어요');
+  return false;
+}
+function delResv() {
+  const it = S.editingResv;
+  if (!confirm(`'${it.title}' 예약을 지울까요? 시트에서도 지워져요.`)) return;
+  S.openResv = null;
+  write('deleteReservation', { row: it.row, orig: resvOrig(it) }, '지웠어요');
 }
 
 /* ───────── 자유 메모 ───────── */
