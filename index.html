@@ -42,7 +42,7 @@ input,select,textarea{font:inherit;color:var(--text)}
 /* 하단 탭 */
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
 .nav .wrap{display:flex}
-.nav button{flex:1;border:0;background:none;padding:9px 0 10px;font-size:11.5px;font-weight:600;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:3px}
+.nav button{flex:1;min-width:0;border:0;background:none;padding:9px 0 10px;font-size:11px;font-weight:600;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:3px}
 .nav button svg{width:22px;height:22px}
 .nav button[aria-current=true]{color:var(--accent)}
 
@@ -152,6 +152,23 @@ input,select,textarea{font:inherit;color:var(--text)}
 .resv-code{margin:8px 0 0 28px;font-size:13px}
 .resv-memo{margin:8px 0 0 28px;font-size:13px;color:#6f6368;background:var(--soft);border-radius:10px;padding:8px 10px;cursor:pointer}
 .resv-memo.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.todo-add{display:flex;gap:8px;padding:10px;margin:10px 0}
+.todo-add input{flex:1;min-width:0;border:0;background:var(--soft);border-radius:12px;padding:10px 12px}
+.todo-list{padding:4px 14px;margin:10px 0}
+.todo{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.todo:first-child{border-top:0}
+.chk{flex:none;width:22px;height:22px;margin-top:1px;border-radius:7px;border:2px solid #e2c9d0;background:#fff;display:grid;place-items:center;padding:0}
+.chk.on{background:var(--accent);border-color:var(--accent)}
+.todo-main{flex:1;min-width:0;cursor:pointer}
+.todo-title{font-weight:600;color:var(--ink);line-height:1.45}
+.is-done .todo-title{color:var(--sub);text-decoration:line-through;font-weight:500}
+.todo-meta{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:4px;font-size:12px;color:var(--sub);align-items:center}
+.due-soon{color:var(--accent-d);font-weight:700}
+.st-doing{font-size:11.5px;font-weight:700;color:#a76712;background:#fff1dc;border-radius:999px;padding:1px 8px}
+.todo-detail{margin-top:6px;font-size:13px;color:#6f6368}
+.todo-detail.clamp{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.todo-toggle{margin:4px 4px 0;font-size:13px}
+.todo-list.done{opacity:.8}
 .memo-intro{margin:10px 2px 0}
 .compose textarea{width:100%;border:0;background:var(--soft);border-radius:12px;padding:10px 12px;resize:vertical;min-height:76px}
 .memo-card{padding:14px 16px}
@@ -387,18 +404,19 @@ function render() {
   const me = S.me ? `${dotOf(S.me)}${esc(S.me)}` : '나는?';
   document.getElementById('app').innerHTML = `
     <header class="top"><div class="wrap">
-      <h1>${{ overview: '여행 개요', schedule: '일정', resv: '예약', memo: '메모' }[S.tab] || '여행 개요'}</h1>
+      <h1>${{ overview: '여행 개요', schedule: '일정', resv: '예약', todo: '할 일', memo: '메모' }[S.tab] || '여행 개요'}</h1>
       <button class="iconbtn" onclick="openPrint()" title="PDF로 저장" aria-label="PDF로 저장"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></button>
       <button class="iconbtn" onclick="load()" title="새로고침" aria-label="새로고침"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
       <button class="me" onclick="askMe()">${me}</button>
     </div></header>
     ${S.busy ? '<div class="busy">시트와 맞추는 중…</div>' : ''}
     ${S.offline ? `<div class="wrap"><div class="offline">📴 구글에 연결되지 않아 <b>${esc(new Date(S.data.fetchedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</b>에 저장된 일정을 보여 주고 있어요. 고치기·의견·메모는 연결되면 할 수 있어요.</div></div>` : ''}
-    <main class="wrap">${S.tab === 'schedule' ? renderSchedule() : S.tab === 'resv' ? renderResv() : S.tab === 'memo' ? renderMemos() : renderOverview(S.data.overview)}</main>
+    <main class="wrap">${S.tab === 'schedule' ? renderSchedule() : S.tab === 'resv' ? renderResv() : S.tab === 'todo' ? renderTodos() : S.tab === 'memo' ? renderMemos() : renderOverview(S.data.overview)}</main>
     <nav class="nav"><div class="wrap">
       <button aria-current="${S.tab === 'overview'}" onclick="setTab('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>개요</button>
       <button aria-current="${S.tab === 'schedule'}" onclick="setTab('schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>일정</button>
       <button aria-current="${S.tab === 'resv'}" onclick="setTab('resv')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5V14a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>예약</button>
+      <button aria-current="${S.tab === 'todo'}" onclick="setTab('todo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>할 일</button>
       <button aria-current="${S.tab === 'memo'}" onclick="setTab('memo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8.5 12.5h7M8.5 16h5"/></svg>메모</button>
     </div></nav>`;
   const nx = document.querySelector('.item.next');
@@ -725,6 +743,88 @@ function delResv() {
   if (!confirm(`'${it.title}' 예약을 지울까요? 시트에서도 지워져요.`)) return;
   S.openResv = null;
   write('deleteReservation', { row: it.row, orig: resvOrig(it) }, '지웠어요');
+}
+
+/* ───────── 할 일 (체크리스트) ───────── */
+function todoDone(t) { return /완료/.test(t.status || ''); }
+function dueInfo(due) { // '11/25' → { label, soon }
+  const p = parseMD(due); if (!p) return due ? { label: due, soon: false } : null;
+  const n = chinaNow(), left = dayNum(tripYear(), p.m, p.d) - dayNum(n.y, n.m, n.d);
+  return { label: `${p.m}/${p.d}` + (left > 0 ? ` · D-${left}` : left === 0 ? ' · 오늘' : ' · 지남'), soon: left <= 2 };
+}
+function renderTodos() {
+  const all = S.data.todos || [];
+  const open = all.filter(t => !todoDone(t)), done = all.filter(todoDone);
+  const pct = all.length ? Math.round(done.length / all.length * 100) : 0;
+  return `
+    <section class="card resv-sum">
+      <div class="resv-sum-top"><div><div class="small muted">출발 전 할 일</div><div class="resv-big">${done.length}<span> / ${all.length} 완료</span></div></div>
+        <div class="resv-left">${open.length ? `남은 할 일 <b>${open.length}</b>개` : '모두 끝났어요 🎉'}</div></div>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+    </section>
+    <form class="card todo-add" onsubmit="return addTodo(event)">
+      <input name="t" maxlength="200" placeholder="할 일 추가" autocomplete="off"><button class="btn primary" type="submit">추가</button>
+    </form>
+    <section class="card todo-list">${open.length ? open.map(renderTodo).join('') : '<div class="small muted" style="padding:6px 2px">남은 할 일이 없어요</div>'}</section>
+    ${done.length ? `<button class="linkbtn todo-toggle" onclick="S.showDone=!S.showDone;render()">${S.showDone ? '▾' : '▸'} 완료 ${done.length}개</button>
+      ${S.showDone ? `<section class="card todo-list done">${done.map(renderTodo).join('')}</section>` : ''}` : ''}
+    <div style="height:8px"></div>`;
+}
+function renderTodo(t) {
+  const done = todoDone(t), open = S.openTodo === t.row, due = done ? null : dueInfo(t.due);
+  const owner = t.owner ? `<span class="who">${members().indexOf(t.owner) >= 0 ? dotOf(t.owner) : ''}${esc(t.owner)}</span>` : '';
+  return `<div class="todo ${done ? 'is-done' : ''}">
+    <button class="chk ${done ? 'on' : ''}" onclick="toggleTodo(${t.row})" aria-label="${done ? '완료 취소' : '완료로 표시'}">${done ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 12.5 4 4 8-9"/></svg>' : ''}</button>
+    <div class="todo-main" onclick="S.openTodo=S.openTodo===${t.row}?null:${t.row};render()">
+      <div class="todo-title">${esc(t.title)}</div>
+      ${owner || due || /진행/.test(t.status) ? `<div class="todo-meta">${/진행/.test(t.status) ? '<span class="st-doing">진행 중</span>' : ''}${owner}${due ? `<span class="${due.soon ? 'due-soon' : ''}">⏰ ${esc(due.label)}</span>` : ''}</div>` : ''}
+      ${t.detail ? `<div class="todo-detail pre ${open ? '' : 'clamp'}">${linkify(t.detail)}</div>` : ''}
+      ${open ? `<div class="btns" style="margin-top:8px">${t.sourceUrl ? `<a class="btn" href="${esc(t.sourceUrl)}" rel="noopener" onclick="event.stopPropagation()">🔗 출처</a>` : ''}<span style="flex:1"></span><button class="btn" onclick="event.stopPropagation();editTodo(${t.row})">✏️ 수정</button></div>` : ''}
+    </div>
+  </div>`;
+}
+function findTodo(row) { return (S.data.todos || []).find(t => t.row === row); }
+function toggleTodo(row) {
+  const t = findTodo(row); if (!t) return;
+  const next = todoDone(t) ? '할 일' : '완료';
+  write('saveTodo', { row: row, orig: t.title, fields: { status: next } }, next === '완료' ? '완료했어요 ✓' : '다시 할 일로 옮겼어요');
+}
+function addTodo(e) {
+  e.preventDefault();
+  const v = e.target.t.value.trim(); if (!v) return false;
+  write('saveTodo', { fields: { title: v, status: '할 일', owner: '' } }, '추가했어요');
+  return false;
+}
+function editTodo(row) {
+  const t = findTodo(row); if (!t) return;
+  S.editingTodo = t;
+  const owners = uniq(['각자'].concat(members(), (S.data.todos || []).map(x => x.owner)));
+  openSheet(`<h3>할 일 수정</h3>
+    <form onsubmit="return saveTodoForm(event)">
+      <label class="fld"><span>할 일</span><input name="title" required value="${esc(t.title)}"></label>
+      <label class="fld"><span>자세히</span><textarea name="detail">${esc(t.detail)}</textarea></label>
+      <div class="two">
+        <label class="fld"><span>상태</span><select name="status">${uniq(['할 일', '진행 중', '완료', t.status]).map(o => `<option ${o === t.status ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></label>
+        <label class="fld"><span>담당</span><input name="owner" list="toL" value="${esc(t.owner)}"><datalist id="toL">${owners.map(o => `<option value="${esc(o)}">`).join('')}</datalist></label>
+      </div>
+      <label class="fld"><span>기한 (예: 11/25)</span><input name="due" value="${esc(t.due)}"></label>
+      <label class="fld"><span>출처 링크</span><input name="sourceUrl" type="url" value="${esc(t.sourceUrl)}" placeholder="https://"></label>
+      <div class="btns"><button type="button" class="btn danger" onclick="delTodo()">삭제</button><span class="sp"></span>
+        <button type="button" class="btn" onclick="closeSheet()">취소</button><button class="btn primary">저장</button></div>
+    </form>`);
+}
+function saveTodoForm(e) {
+  e.preventDefault();
+  const f = e.target, t = S.editingTodo, fields = {};
+  ['title', 'detail', 'status', 'owner', 'due', 'sourceUrl'].forEach(k => { fields[k] = f[k].value.trim(); });
+  write('saveTodo', { row: t.row, orig: t.title, fields: fields }, '고쳤어요');
+  return false;
+}
+function delTodo() {
+  const t = S.editingTodo;
+  if (!confirm(`'${t.title}'을(를) 지울까요? 시트에서도 지워져요.`)) return;
+  S.openTodo = null;
+  write('deleteTodo', { row: t.row, orig: t.title }, '지웠어요');
 }
 
 /* ───────── 자유 메모 ───────── */
