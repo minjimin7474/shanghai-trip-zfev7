@@ -210,6 +210,13 @@ input,select,textarea{font:inherit;color:var(--text)}
 .wx i{font-style:normal;font-size:10.5px;color:#4a7fb8}
 .info-tabs{padding-top:12px}
 .stay-head{padding:14px 16px}
+.stay-hero img{max-height:220px;object-fit:cover;margin-bottom:10px}.stay-hero{margin-top:0}
+.stay-addr{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.stay-lbl{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:4px}
+.stay-btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.btn-xs{padding:6px 10px;font-size:12.5px;border-radius:10px}
+.stay-kv{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13.5px}.stay-kv-t{flex:1;min-width:0;word-break:break-all}
+.stay-sub{margin:14px 2px 2px;font-size:13px;font-weight:700;color:var(--accent)}
 .info-item{padding:10px 2px;border-top:1px solid var(--line)}
 .info-item:first-child{border-top:0;padding-top:2px}
 .info-main{font-size:14px;color:var(--text)}
@@ -970,22 +977,77 @@ function stayPhoto(note, row) {
   const exact = hits.find(p => p[0] === row);
   return stayPhotoSrc((exact || hits[0])[0]);
 }
+// 숙소 화면: 시트 '숙소 체크인'의 구분(A열)별로 묶은 뒤 앱용으로 다시 배치한다.
+//  - 숙소 주소·시설(WiFi)·시간 → 맨 위 배너(접지 않음, 복사 가능)
+//  - 수리, '밤 10시 이후' 안내 → 숙소 안내 / 비밀번호로 안 열릴 때 → 찾아오는 길 / 주의사항 → 빼기
+const STAY_RULES = [
+  { re: /숙소\s*주소/, to: 'banner' }, { re: /^시설/, to: 'banner' }, { re: /^시간/, to: 'banner' },
+  { re: /수리/, to: '숙소 안내' }, { re: /비밀번호로\s*안\s*열릴/, to: '찾아오는 길', sub: true },
+  { re: /주의사항/, to: 'drop' },
+];
+const STAY_ORDER = ['체크인 등록', '찾아오는 길', '숙소 안내'];
+const QUIET_RE = /^밤 10시 이후엔/;
+function stayBase(t) { return t.replace(/^\d+\.\s*/, '').trim(); }
 function renderStay() {
   const g = infoGrid('stay'); if (!g) return '<div class="empty">숙소 체크인 탭을 찾지 못했어요</div>';
-  const R = g.rows, secs = []; let cur = null;
+  const R = g.rows, raw = []; let cur = null;
   const start = R.findIndex(r => /^구분$/.test((r[0] || '').trim()));
   R.slice(start + 1).forEach((r, i) => {
     const a = (r[0] || '').trim(), b = (r[1] || '').trim(), c = (r[2] || '').trim();
-    if (a) { cur = { title: a, items: [] }; secs.push(cur); }
-    if (!cur) { cur = { title: '안내', items: [] }; secs.push(cur); }
-    if (b || c) cur.items.push({ main: b, note: c, link: (g.links[start + 1 + i] || [])[1] || '', photo: stayPhoto(c, start + 2 + i) });
+    if (a) { cur = { title: a, items: [] }; raw.push(cur); }
+    if (!cur) { cur = { title: '안내', items: [] }; raw.push(cur); }
+    if (b || c) cur.items.push({ main: b, note: c, photo: stayPhoto(c, start + 2 + i) });
   });
-  const head = `<div class="card stay-head"><div class="zh-head-t">${esc(R[0] && R[0][0] || '')}</div>${[R[1] && R[1][1], R[2] && R[2][1]].filter(Boolean).map(t => `<div class="small muted">${esc(t)}</div>`).join('')}</div>`;
-  return head + secs.map((sc, si) => foldCard('stay' + si, sc.title, sc.items.length, sc.items.map(it => `<div class="info-item">
+  // 다시 배치
+  const banner = { addr: '', addrEn: '', photo: '', rows: [] }, secs = {}, order = [];
+  const sec = name => { if (!secs[name]) { secs[name] = { title: name, items: [] }; order.push(name); } return secs[name]; };
+  let quiet = null;
+  raw.forEach(sc => {
+    const base = stayBase(sc.title), rule = STAY_RULES.find(x => x.re.test(base));
+    const items = sc.items.filter(it => {
+      if (QUIET_RE.test(it.note)) { if (!quiet) quiet = it; return false; }
+      return true;
+    });
+    if (rule && rule.to === 'drop') return;
+    if (rule && rule.to === 'banner') {
+      items.forEach(it => {
+        if (/숙소\s*주소/.test(base)) {
+          if (it.photo && !banner.photo) banner.photo = it.photo;
+          else if (it.main && !/^\[.*\]$/.test(it.main) && !banner.addr) { const L = it.main.split('\n'); banner.addr = L[0].trim(); banner.addrEn = (L.slice(1).join(' ') || '').trim(); }
+        } else if (it.main) it.main.split('\n').filter(x => x.trim()).forEach(l => banner.rows.push({ label: base, text: l.trim() }));
+      });
+      return;
+    }
+    const target = sec(rule ? rule.to : base);
+    if (rule && rule.sub) {
+      const kept = items.filter(it => !/즐거운 숙박/.test(it.main));
+      if (kept.length) target.items.push({ sub: base }), kept.forEach(it => target.items.push(it));
+    } else items.forEach(it => target.items.push(it));
+  });
+  if (quiet) sec('숙소 안내').items.push(quiet);
+  const names = STAY_ORDER.filter(n => secs[n]).concat(order.filter(n => STAY_ORDER.indexOf(n) < 0));
+
+  const pw = t => (t.match(/비밀번호\s*[:：]?\s*([A-Za-z0-9]+)/) || [])[1] || '';
+  const row = r => {
+    const p = /wifi|와이파이/i.test(r.text) ? pw(r.text) : '';
+    return `<div class="stay-kv"><span class="stay-kv-t">${telLink(r.text)}</span>${p ? `<button class="btn btn-xs" onclick="copyText(${esc(JSON.stringify(p))})">비번 복사</button>` : ''}</div>`;
+  };
+  const head = `<div class="card stay-head">
+    ${banner.photo ? `<a class="stay-photo stay-hero" href="${banner.photo}" target="_blank" rel="noopener"><img src="${banner.photo}" alt="숙소" loading="lazy"></a>` : ''}
+    <div class="zh-head-t">${esc(R[0] && R[0][0] || '')}</div>
+    ${[R[1] && R[1][1], R[2] && R[2][1]].filter(Boolean).map(t => `<div class="small muted">${esc(t)}</div>`).join('')}
+    ${banner.addr ? `<div class="stay-addr"><div class="stay-lbl">📍 주소</div><div class="pre info-main">${esc(banner.addr)}</div>${banner.addrEn ? `<div class="small muted">${esc(banner.addrEn)}</div>` : ''}
+      <div class="stay-btns"><button class="btn btn-xs" onclick="copyText(${esc(JSON.stringify(banner.addr))})">주소 복사</button>${banner.addrEn ? `<button class="btn btn-xs" onclick="copyText(${esc(JSON.stringify(banner.addrEn))})">영문 주소 복사</button>` : ''}</div></div>` : ''}
+    ${banner.rows.length ? `<div class="stay-addr">${banner.rows.map((r, i) => (i === 0 || banner.rows[i - 1].label !== r.label ? `<div class="stay-lbl"${i ? ' style="margin-top:10px"' : ''}>${esc({ '시설': '📶 WiFi', '시간': '🕒 체크인·체크아웃' }[r.label] || r.label)}</div>` : '') + row(r)).join('')}</div>` : ''}
+  </div>`;
+  return head + names.map((n, si) => {
+    const sc = secs[n], cnt = sc.items.filter(it => !it.sub).length;
+    return foldCard('stay' + si, (si + 1) + '. ' + n, cnt, sc.items.map(it => it.sub ? `<div class="stay-sub">${esc(it.sub)}</div>` : `<div class="info-item">
       ${it.main ? `<div class="pre info-main">${telLink(it.main)}</div>` : ''}
       ${it.photo ? `<a class="stay-photo" href="${it.photo}" target="_blank" rel="noopener"><img src="${it.photo}" alt="${esc(it.note)}" loading="lazy"></a>` : ''}
       ${it.note ? `<div class="pre info-note">${telLink(it.note)}</div>` : ''}
-    </div>`).join(''))).join('') + `<p class="small muted" style="margin:10px 4px">WiFi·도어락 비밀번호는 앱에 보이지 않게 가렸어요. 시트 '숙소 체크인' 탭에서 확인하세요. 사진을 누르면 크게 볼 수 있어요.</p>`;
+    </div>`).join(''));
+  }).join('') + `<p class="small muted" style="margin:10px 4px">사진을 누르면 크게 볼 수 있어요.</p>`;
 }
 function renderMove() {
   const g = infoGrid('move'); if (!g) return '<div class="empty">교통·디즈니 탭을 찾지 못했어요</div>';
