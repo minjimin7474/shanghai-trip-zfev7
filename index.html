@@ -1030,7 +1030,7 @@ function renderStay() {
   const pw = t => (t.match(/비밀번호\s*[:：]?\s*([A-Za-z0-9]+)/) || [])[1] || '';
   const row = r => {
     const p = /wifi|와이파이/i.test(r.text) ? pw(r.text) : '';
-    return `<div class="stay-kv"><span class="stay-kv-t">${telLink(r.text)}</span>${p ? `<button class="btn btn-xs" onclick="copyText(${esc(JSON.stringify(p))})">비번 복사</button>` : ''}</div>`;
+    return `<div class="stay-kv"><span class="stay-kv-t">${p ? esc(r.text) : telLink(r.text)}</span>${p ? `<button class="btn btn-xs" onclick="copyText(${esc(JSON.stringify(p))})">비번 복사</button>` : ''}</div>`;
   };
   const head = `<div class="card stay-head">
     ${banner.photo ? `<a class="stay-photo stay-hero" href="${banner.photo}" target="_blank" rel="noopener"><img src="${banner.photo}" alt="숙소" loading="lazy"></a>` : ''}
