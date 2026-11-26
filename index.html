@@ -208,6 +208,26 @@ input,select,textarea{font:inherit;color:var(--text)}
 .wx{flex:none;display:flex;flex-direction:column;align-items:flex-end;font-size:15px;line-height:1.2;margin-left:4px}
 .wx b{font-size:12px;font-weight:600;color:var(--text)}
 .wx i{font-style:normal;font-size:10.5px;color:#4a7fb8}
+.info-tabs{padding-top:12px}
+.stay-head{padding:14px 16px}
+.info-item{padding:10px 2px;border-top:1px solid var(--line)}
+.info-item:first-child{border-top:0;padding-top:2px}
+.info-main{font-size:14px;color:var(--text)}
+.info-note{margin-top:6px;font-size:12.5px;color:#6f6368;background:var(--soft);border-radius:10px;padding:8px 10px}
+.info-kv{display:flex;gap:8px;font-size:13px;margin-top:4px}
+.info-kv span{flex:none;width:74px;color:var(--sub);font-size:12px;padding-top:1px}
+.info-kv > :last-child{flex:1;min-width:0}
+.kv b{display:block;font-size:13px;color:var(--ink);margin-bottom:2px}
+.kv .pre{font-size:13px}
+.card.place{padding:14px 14px 12px;margin:10px 0}
+.place-top{cursor:pointer}
+.place-name{font-weight:700;color:var(--ink);line-height:1.4;white-space:pre-line}
+.place-zh{font-family:"PingFang SC","Hiragino Sans GB","Noto Sans SC",var(--font);font-size:14px;color:#6f6368;margin-top:1px}
+.place-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.badge{font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--accent-bg);color:var(--accent-d)}
+.place-what{margin-top:6px;font-size:13px;color:var(--text)}
+.place-what.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.place-more{margin-top:8px;border-top:1px solid var(--line);padding-top:6px}
 .memo-intro{margin:10px 2px 0}
 .compose textarea{width:100%;border:0;background:var(--soft);border-radius:12px;padding:10px 12px;resize:vertical;min-height:76px}
 .memo-card{padding:14px 16px}
@@ -312,6 +332,7 @@ const CAT_ICON = { '이동': '🚕', '식사': '🍽️', '체험·촬영': '�
 
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
 S.tab = store('trip.tab') || 'overview';
+if (S.tab === 'todo') S.tab = 'overview'; // 할 일 탭은 앱에서 뺐음
 S.me = store('trip.me');
 
 /* ───────── 도우미 ───────── */
@@ -447,19 +468,19 @@ function render() {
   const me = S.me ? `${dotOf(S.me)}${esc(S.me)}` : '나는?';
   document.getElementById('app').innerHTML = `
     <header class="top"><div class="wrap">
-      <h1>${{ overview: '여행 개요', schedule: '일정', resv: '예약', todo: '할 일', memo: '메모', zh: '여행용 중국어' }[S.tab] || '여행 개요'}</h1>
+      <h1>${{ overview: '여행 개요', schedule: '일정', resv: '예약', todo: '할 일', memo: '메모', zh: '여행용 중국어', info: '여행 정보' }[S.tab] || '여행 개요'}</h1>
       <button class="iconbtn" onclick="openPrint()" title="PDF로 저장" aria-label="PDF로 저장"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg></button>
       <button class="iconbtn" onclick="load()" title="새로고침" aria-label="새로고침"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
       <button class="me" onclick="askMe()">${me}</button>
     </div></header>
     ${S.busy ? '<div class="busy">시트와 맞추는 중…</div>' : ''}
     ${S.offline ? `<div class="wrap"><div class="offline">📴 구글에 연결되지 않아 <b>${esc(new Date(S.data.fetchedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }))}</b>에 저장된 일정을 보여 주고 있어요. 고치기·의견·메모는 연결되면 할 수 있어요.</div></div>` : ''}
-    <main class="wrap">${S.tab === 'schedule' ? renderSchedule() : S.tab === 'resv' ? renderResv() : S.tab === 'todo' ? renderTodos() : S.tab === 'zh' ? renderPhrases() : S.tab === 'memo' ? renderMemos() : renderOverview(S.data.overview)}</main>
+    <main class="wrap">${S.tab === 'schedule' ? renderSchedule() : S.tab === 'resv' ? renderResv() : S.tab === 'info' ? renderInfo() : S.tab === 'zh' ? renderPhrases() : S.tab === 'memo' ? renderMemos() : renderOverview(S.data.overview)}</main>
     <nav class="nav"><div class="wrap">
       <button aria-current="${S.tab === 'overview'}" onclick="setTab('overview')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-5h4v5"/></svg>개요</button>
       <button aria-current="${S.tab === 'schedule'}" onclick="setTab('schedule')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>일정</button>
       <button aria-current="${S.tab === 'resv'}" onclick="setTab('resv')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5V14a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>예약</button>
-      <button aria-current="${S.tab === 'todo'}" onclick="setTab('todo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>할 일</button>
+      <button aria-current="${S.tab === 'info'}" onclick="setTab('info')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.1"/></svg>정보</button>
       <button aria-current="${S.tab === 'zh'}" onclick="setTab('zh')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 9h7M12 7.5v6M9.5 13.5c1.5-.6 3.5-2 4.5-4.5"/></svg>중국어</button>
       <!-- 메모 탭은 항상 맨 오른쪽 끝 (새 탭은 이 줄 위에 추가) -->
       <button aria-current="${S.tab === 'memo'}" onclick="setTab('memo')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8.5 12.5h7M8.5 16h5"/></svg>메모</button>
@@ -911,6 +932,111 @@ function bigZh(si, ri) {
   const d = document.createElement('div'); d.className = 'driver'; d.id = 'driver';
   d.innerHTML = `<div class="big" lang="zh-CN">${esc(r.zh)}</div>${r.ko && !/^└/.test(r.ko) ? `<div class="ko">${esc(r.ko)}</div>` : ''}<button onclick="document.getElementById('driver').remove()">닫기</button>`;
   document.body.appendChild(d);
+}
+
+/* ───────── 정보 (숙소 체크인·교통·맛집·쇼핑, 읽기 전용) ───────── */
+const INFO_SECS = [['stay', '🏨 숙소'], ['move', '🚕 교통·디즈니'], ['food', '🍜 맛집'], ['shop', '🛍️ 쇼핑']];
+function infoGrid(k) { return (S.data.info || {})[k] || null; }
+function telLink(s) { return linkify(s).replace(/(^|[^\d])(1[3-9]\d{9})(?!\d)/g, '$1<a class="tel" href="tel:$2" target="_top">$2</a>'); }
+function infoOpen(key) { if (!S.infoOpenMap) { try { S.infoOpenMap = JSON.parse(localStorage.getItem('trip.infoOpen') || '{}'); } catch (e) { S.infoOpenMap = {}; } } return !!S.infoOpenMap[key]; }
+function toggleInfo(key) { infoOpen(key); S.infoOpenMap[key] = !S.infoOpenMap[key]; try { localStorage.setItem('trip.infoOpen', JSON.stringify(S.infoOpenMap)); } catch (e) { /* 저장 못 해도 동작 */ } render(); }
+function foldCard(key, title, count, body) {
+  const open = infoOpen(key);
+  return `<section class="card zh-sec ${open ? 'open' : 'closed'}">
+    <button class="zh-head" onclick="toggleInfo('${key}')" aria-expanded="${open}"><span class="zh-head-t">${esc(title)}</span>${count ? `<span class="zh-count">${count}</span>` : ''}
+      <svg class="zh-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+    ${open ? `<div class="zh-body">${body}</div>` : ''}</section>`;
+}
+function renderInfo() {
+  const sec = S.infoSec || 'stay';
+  const chips = INFO_SECS.map(x => `<button class="fbtn" aria-pressed="${sec === x[0]}" onclick="S.infoSec='${x[0]}';S.infoQ='';render();window.scrollTo(0,0)">${x[1]}</button>`).join('');
+  const body = sec === 'stay' ? renderStay() : sec === 'move' ? renderMove() : sec === 'food' ? renderPlaces('food') : renderPlaces('shop');
+  return `<div class="filter info-tabs">${chips}</div>${body}<div style="height:8px"></div>`;
+}
+function renderStay() {
+  const g = infoGrid('stay'); if (!g) return '<div class="empty">숙소 체크인 탭을 찾지 못했어요</div>';
+  const R = g.rows, secs = []; let cur = null;
+  const start = R.findIndex(r => /^구분$/.test((r[0] || '').trim()));
+  R.slice(start + 1).forEach((r, i) => {
+    const a = (r[0] || '').trim(), b = (r[1] || '').trim(), c = (r[2] || '').trim();
+    if (a) { cur = { title: a, items: [] }; secs.push(cur); }
+    if (!cur) { cur = { title: '안내', items: [] }; secs.push(cur); }
+    if (b || c) cur.items.push({ main: b, note: c, link: (g.links[start + 1 + i] || [])[1] || '' });
+  });
+  const head = `<div class="card stay-head"><div class="zh-head-t">${esc(R[0] && R[0][0] || '')}</div>${[R[1] && R[1][1], R[2] && R[2][1]].filter(Boolean).map(t => `<div class="small muted">${esc(t)}</div>`).join('')}</div>`;
+  return head + secs.map((sc, si) => foldCard('stay' + si, sc.title, sc.items.length, sc.items.map(it => `<div class="info-item">
+      ${it.main ? `<div class="pre info-main">${telLink(it.main)}</div>` : ''}
+      ${it.note ? `<div class="pre info-note">${telLink(it.note)}</div>` : ''}
+    </div>`).join(''))).join('') + `<p class="small muted" style="margin:10px 4px">WiFi·도어락 비밀번호는 앱에 보이지 않게 가렸어요. 시트 '숙소 체크인' 탭에서 확인하세요.</p>`;
+}
+function renderMove() {
+  const g = infoGrid('move'); if (!g) return '<div class="empty">교통·디즈니 탭을 찾지 못했어요</div>';
+  const blocks = []; let cur = null;
+  g.rows.forEach((r, i) => {
+    const filled = r.map(c => (c || '').trim()).filter(Boolean).length;
+    if (!filled) { cur = null; return; }
+    const link = (g.links[i] || []).find(Boolean) || '';
+    if (!cur) { cur = { title: r[0], header: null, rows: [], notes: [] }; blocks.push(cur); return; }
+    if (!cur.header && filled >= 2) { cur.header = r; return; }
+    if (filled === 1 && (r[0] || '').trim()) { cur.notes.push({ t: r[0], link: link }); return; }
+    cur.rows.push(r);
+  });
+  return blocks.map((b, bi) => {
+    const H = b.header || [];
+    const two = H.filter(Boolean).length <= 2;
+    const rows = b.rows.map(r => two
+      ? `<div class="info-item kv"><b>${esc(r[0])}</b><div class="pre">${telLink(r.slice(1).filter(Boolean).join('\n'))}</div></div>`
+      : `<div class="info-item"><div class="info-main"><b>${esc(r[0])}</b></div>${r.slice(1).map((c, j) => c ? `<div class="info-kv"><span>${esc(H[j + 1] || '')}</span>${linkify(c)}</div>` : '').join('')}</div>`).join('');
+    const notes = b.notes.map(n => `<div class="info-note pre">${n.link ? `<a href="${esc(n.link)}" rel="noopener">${esc(n.t)} ↗</a>` : linkify(n.t)}</div>`).join('');
+    return foldCard('move' + bi, b.title, b.rows.length, rows + notes);
+  }).join('');
+}
+function renderPlaces(kind) {
+  const g = infoGrid(kind); if (!g) return `<div class="empty">${kind === 'food' ? '맛집' : '쇼핑'} 탭을 찾지 못했어요</div>`;
+  const H = g.rows[0] || [], col = name => H.findIndex(h => (h || '').indexOf(name) === 0);
+  const C = kind === 'food'
+    ? { area: col('지역'), name: col('이름'), zh: col('중국어'), what: col('메뉴'), badge: col('수상'), memo: col('지점'), hours: col('영업'), price: col('가격'), plan: col('일정'), who: col('가고 싶은'), op: col('의견') }
+    : { area: col('지역'), name: col('이름'), what: col('종류'), memo: col('특징'), hours: col('영업'), web: col('인스타'), tag: col('정도'), op: col('의견') };
+  const get = (r, k) => (C[k] >= 0 ? (r[C[k]] || '').trim() : '');
+  let list = g.rows.slice(1).map((r, i) => ({ r: r, idx: i + 1, link: C.name >= 0 ? (g.links[i + 1] || [])[C.name] : '' })).filter(x => get(x.r, 'name'));
+  const areas = uniq(list.map(x => get(x.r, 'area').split(/\s*[(（]/)[0]).filter(Boolean));
+  const fa = S.infoArea && S.infoArea[kind] || 'all', q = (S.infoQ || '').trim().toLowerCase();
+  list = list.filter(x => (fa === 'all' || get(x.r, 'area').indexOf(fa) === 0) && (!q || x.r.join(' ').toLowerCase().indexOf(q) >= 0));
+  const webUrl = w => { const m = /@([A-Za-z0-9_.]+)/.exec(w); if (m) return 'https://instagram.com/' + m[1]; const d = /([a-z0-9-]+\.[a-z.]{2,})/i.exec(w); return d ? 'https://' + d[1] : ''; };
+  const cards = list.map((x, i) => {
+    const r = x.r, key = kind + x.idx, open = infoOpen(key);
+    const nav = x.link || amapSearch(get(r, 'zh') || get(r, 'name').split('\n')[0]);
+    const zh = get(r, 'zh');
+    const details = kind === 'food'
+      ? [['지점·메모', 'memo'], ['영업시간', 'hours'], ['가격대', 'price'], ['일정 제안', 'plan'], ['가고 싶은 사람', 'who'], ['의견', 'op']]
+      : [['영업시간', 'hours'], ['의견', 'op']];
+    return `<article class="card place">
+      <div class="place-top" onclick="toggleInfo('${key}')">
+        <div class="place-name">${esc(get(r, 'name'))}</div>
+        ${zh ? `<div class="place-zh" lang="zh-CN">${esc(zh)}</div>` : ''}
+        <div class="place-chips">${get(r, 'area') ? `<span class="who">${esc(get(r, 'area'))}</span>` : ''}${get(r, 'what') && kind === 'shop' ? `<span class="who">${esc(get(r, 'what'))}</span>` : ''}${get(r, 'badge') && get(r, 'badge') !== '–' ? `<span class="badge">${esc(get(r, 'badge'))}</span>` : ''}${get(r, 'tag') ? `<span class="badge">${esc(get(r, 'tag'))}</span>` : ''}</div>
+        ${kind === 'food' && get(r, 'what') ? `<div class="place-what">${esc(get(r, 'what'))}</div>` : ''}
+        ${kind === 'shop' && get(r, 'memo') ? `<div class="place-what ${open ? '' : 'clamp'}">${esc(get(r, 'memo'))}</div>` : ''}
+      </div>
+      ${open ? `<div class="place-more">${details.map(d => get(r, d[1]) ? `<div class="info-kv"><span>${d[0]}</span><div class="pre">${linkify(get(r, d[1]))}</div></div>` : '').join('')}</div>` : ''}
+      <div class="btns" style="margin-top:10px">
+        <a class="btn primary" href="${esc(nav)}" rel="noopener">📍 고덕지도</a>
+        ${zh ? `<button class="btn" onclick="copyText(${esc(JSON.stringify(zh))})">중국어 복사</button>` : ''}
+        ${get(r, 'web') && webUrl(get(r, 'web')) ? `<a class="btn" href="${esc(webUrl(get(r, 'web')))}" rel="noopener">🔗 ${esc(get(r, 'web').split(/\s/)[0])}</a>` : ''}
+        <button class="btn" onclick="toggleInfo('${key}')">${open ? '접기' : '자세히'}</button>
+      </div>
+    </article>`;
+  }).join('');
+  return `
+    <div class="zh-search"><input type="search" placeholder="${kind === 'food' ? '가게·메뉴·지역으로 찾기' : '가게·종류·지역으로 찾기'}" value="${esc(S.infoQ || '')}" oninput="S.infoQ=this.value;renderKeepFocusInfo()"></div>
+    <div class="filter">${[['all', '전체 ' + (g.rows.length - 1)]].concat(areas.map(a => [a, a])).map(a => `<button class="fbtn" aria-pressed="${fa === a[0]}" onclick="S.infoArea=S.infoArea||{};S.infoArea['${kind}']=${JSON.stringify(a[0]).replace(/"/g, "'")};render()">${esc(a[1])}</button>`).join('')}</div>
+    ${cards || '<div class="empty">찾는 곳이 없어요</div>'}`;
+}
+function renderKeepFocusInfo() {
+  const pos = document.activeElement && document.activeElement.selectionStart;
+  render();
+  const i = document.querySelector('.zh-search input');
+  if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch (e) { /* search 입력칸은 커서 지정이 안 되는 브라우저도 있음 */ } }
 }
 
 /* ───────── 할 일 (체크리스트) ───────── */
