@@ -1000,6 +1000,7 @@ function renderPlaces(kind) {
   const get = (r, k) => (C[k] >= 0 ? (r[C[k]] || '').trim() : '');
   let list = g.rows.slice(1).map((r, i) => ({ r: r, idx: i + 1, link: C.name >= 0 ? (g.links[i + 1] || [])[C.name] : '' })).filter(x => get(x.r, 'name'));
   const areas = uniq(list.map(x => get(x.r, 'area').split(/\s*[(（]/)[0]).filter(Boolean));
+  const total = list.length;
   const fa = S.infoArea && S.infoArea[kind] || 'all', q = (S.infoQ || '').trim().toLowerCase();
   list = list.filter(x => (fa === 'all' || get(x.r, 'area').indexOf(fa) === 0) && (!q || x.r.join(' ').toLowerCase().indexOf(q) >= 0));
   const webUrl = w => { const m = /@([A-Za-z0-9_.]+)/.exec(w); if (m) return 'https://instagram.com/' + m[1]; const d = /([a-z0-9-]+\.[a-z.]{2,})/i.exec(w); return d ? 'https://' + d[1] : ''; };
@@ -1029,7 +1030,7 @@ function renderPlaces(kind) {
   }).join('');
   return `
     <div class="zh-search"><input type="search" placeholder="${kind === 'food' ? '가게·메뉴·지역으로 찾기' : '가게·종류·지역으로 찾기'}" value="${esc(S.infoQ || '')}" oninput="S.infoQ=this.value;renderKeepFocusInfo()"></div>
-    <div class="filter">${[['all', '전체 ' + (g.rows.length - 1)]].concat(areas.map(a => [a, a])).map(a => `<button class="fbtn" aria-pressed="${fa === a[0]}" onclick="S.infoArea=S.infoArea||{};S.infoArea['${kind}']=${JSON.stringify(a[0]).replace(/"/g, "'")};render()">${esc(a[1])}</button>`).join('')}</div>
+    <div class="filter">${[['all', '전체 ' + total]].concat(areas.map(a => [a, a])).map(a => `<button class="fbtn" aria-pressed="${fa === a[0]}" onclick="S.infoArea=S.infoArea||{};S.infoArea['${kind}']=${JSON.stringify(a[0]).replace(/"/g, "'")};render()">${esc(a[1])}</button>`).join('')}</div>
     ${cards || '<div class="empty">찾는 곳이 없어요</div>'}`;
 }
 function renderKeepFocusInfo() {
